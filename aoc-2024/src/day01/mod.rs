@@ -1,7 +1,7 @@
 pub fn run() {
     let lists = read_input("input.txt");
-    utils::measure_exec_time(|| calc_total_distance(&lists), "part1");
-    utils::measure_exec_time(|| calc_similarity_score(&lists), "part2");
+    utils::run_solution!(|| calc_total_distance(&lists), "part1");
+    utils::run_solution!(|| calc_similarity_score(&lists), "part2");
 }
 
 fn calc_total_distance(lists: &[Vec<isize>; 2]) -> isize {

@@ -1,12 +1,9 @@
-pub fn measure_exec_time<T, F>(op: F, desc: &str)
-where
-    F: FnOnce() -> T,
-    T: std::fmt::Display + std::fmt::Debug,
-{
-    measure_exec_time_with_scale(op, desc, None)
-}
-
-pub fn measure_exec_time_with_scale<T, F>(op: F, desc: &str, force_scale: Option<Scale>)
+pub fn measure_exec_time_with_scale<T, F>(
+    mod_path: &str,
+    op: F,
+    desc: &str,
+    force_scale: Option<Scale>,
+) -> T
 where
     F: FnOnce() -> T,
     T: std::fmt::Display + std::fmt::Debug,
@@ -19,7 +16,18 @@ where
         None => infer_scale_to_output(&elapsed, Scale::Millis, false),
     };
 
-    println!("{desc}: {result}, finished in {time} {scale}");
+    println!("{mod_path} {desc}: {result}, finished in {time} {scale}",);
+    result
+}
+
+#[macro_export]
+macro_rules! run_solution {
+    ($op: expr, $desc: expr) => {{
+        $crate::measure_exec_time_with_scale(module_path!(), $op, $desc, None)
+    }};
+    ($op: expr, $desc: expr, $force_scale: expr) => {{
+        $crate::measure_exec_time_with_scale(module_path!(), $op, $desc, $force_scale)
+    }};
 }
 
 fn infer_scale_to_output(
