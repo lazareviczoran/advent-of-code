@@ -86,3 +86,12 @@ impl Scale {
         }
     }
 }
+
+#[macro_export]
+macro_rules! get_file_path_within_module {
+    ($filename: expr) => {{
+        let manifest_dir = std::env!("CARGO_MANIFEST_DIR");
+        let module_dir = module_path!().split_terminator("::").last().unwrap();
+        format!("{manifest_dir}/src/{module_dir}/{}", $filename)
+    }};
+}

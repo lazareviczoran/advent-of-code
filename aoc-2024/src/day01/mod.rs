@@ -27,9 +27,7 @@ fn calc_similarity_score(lists: &[Vec<isize>; 2]) -> isize {
 }
 
 fn read_input(filename: &str) -> [Vec<isize>; 2] {
-    let manifest_dir = std::env!("CARGO_MANIFEST_DIR");
-    let module_dir = module_path!().split_terminator("::").last().unwrap();
-    let mut lists = std::fs::read_to_string(format!("{manifest_dir}/src/{module_dir}/{filename}"))
+    let mut lists = std::fs::read_to_string(utils::get_file_path_within_module!(filename))
         .expect("failed to read file")
         .lines()
         .map(|l| {
