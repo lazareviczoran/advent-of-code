@@ -5,11 +5,11 @@ pub fn run() {
 }
 
 fn calc_total_distance(lists: &[Vec<isize>; 2]) -> isize {
-    let mut total_distance = 0;
-    for i in 0..lists[0].len() {
-        total_distance += (lists[0][i] - lists[1][i]).abs();
-    }
-    total_distance
+    lists[0]
+        .iter()
+        .zip(&lists[1])
+        .map(|(x, y)| (x - y).abs())
+        .sum()
 }
 
 fn calc_similarity_score(lists: &[Vec<isize>; 2]) -> isize {
