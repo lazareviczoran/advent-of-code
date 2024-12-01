@@ -88,6 +88,14 @@ impl Scale {
 }
 
 #[macro_export]
+macro_rules! read_to_string_in_module {
+    ($filename: expr) => {{
+        std::fs::read_to_string($crate::get_file_path_within_module!($filename))
+            .expect("Failed to read file")
+    }};
+}
+
+#[macro_export]
 macro_rules! get_file_path_within_module {
     ($filename: expr) => {{
         let manifest_dir = std::env!("CARGO_MANIFEST_DIR");

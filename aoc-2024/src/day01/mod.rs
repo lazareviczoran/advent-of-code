@@ -27,8 +27,7 @@ fn calc_similarity_score(lists: &[Vec<isize>; 2]) -> isize {
 }
 
 fn read_input(filename: &str) -> [Vec<isize>; 2] {
-    let mut lists = std::fs::read_to_string(utils::get_file_path_within_module!(filename))
-        .expect("failed to read file")
+    let mut lists = utils::read_to_string_in_module!(filename)
         .lines()
         .map(|l| {
             let parts = l
