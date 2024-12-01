@@ -141,7 +141,7 @@ fn get_candidates(
     curr_tile_id: &usize,
     image: &BTreeMap<Point, Tile>,
 ) -> Vec<(Point, Tile)> {
-    let mut tile = tiles.get(&curr_tile_id).unwrap().clone();
+    let mut tile = tiles.get(curr_tile_id).unwrap().clone();
     image
         .iter()
         .filter_map(|(p, _id)| {
@@ -192,7 +192,7 @@ impl Ord for Point {
 }
 impl PartialOrd for Point {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(&other))
+        Some(self.cmp(other))
     }
 }
 

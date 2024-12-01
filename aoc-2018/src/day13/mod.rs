@@ -16,8 +16,8 @@ pub fn run() {
     );
 }
 
-fn find_last_remaining_cart_pos(map: &Vec<Vec<char>>, initial_carts: &Vec<Cart>) -> (usize, usize) {
-    let mut carts = initial_carts.clone();
+fn find_last_remaining_cart_pos(map: &[Vec<char>], initial_carts: &[Cart]) -> (usize, usize) {
+    let mut carts = initial_carts.to_vec();
     carts.sort();
 
     while carts.len() > 1 {
@@ -26,7 +26,7 @@ fn find_last_remaining_cart_pos(map: &Vec<Vec<char>>, initial_carts: &Vec<Cart>)
     carts[0].pos
 }
 
-fn apply_tick_v2(map: &Vec<Vec<char>>, carts: &mut Vec<Cart>) {
+fn apply_tick_v2(map: &[Vec<char>], carts: &mut Vec<Cart>) {
     let clone = carts.clone();
     carts.clear();
     let mut visited = HashSet::new();
@@ -36,7 +36,7 @@ fn apply_tick_v2(map: &Vec<Vec<char>>, carts: &mut Vec<Cart>) {
     for cart in clone.iter() {
         let mut cart_mut = *cart;
         cart_mut.move_pos(map);
-        if visited.get(&cart_mut.pos).is_none() {
+        if !visited.contains(&cart_mut.pos) {
             carts.push(cart_mut);
             visited.insert(cart_mut.pos);
         } else {
@@ -46,19 +46,19 @@ fn apply_tick_v2(map: &Vec<Vec<char>>, carts: &mut Vec<Cart>) {
     carts.sort();
 }
 
-fn find_first_collision(map: &Vec<Vec<char>>, initial_carts: &Vec<Cart>) -> (usize, usize) {
-    let mut carts = initial_carts.clone();
+fn find_first_collision(map: &[Vec<char>], initial_carts: &[Cart]) -> (usize, usize) {
+    let mut carts = initial_carts.to_vec();
     carts.sort();
 
     loop {
         let collisions = apply_tick(map, &mut carts);
-        if collisions.len() > 0 {
+        if !collisions.is_empty() {
             return collisions[0];
         }
     }
 }
 
-fn apply_tick(map: &Vec<Vec<char>>, carts: &mut Vec<Cart>) -> Vec<(usize, usize)> {
+fn apply_tick(map: &[Vec<char>], carts: &mut [Cart]) -> Vec<(usize, usize)> {
     for cart in carts.iter_mut() {
         cart.move_pos(map);
     }
@@ -74,10 +74,10 @@ fn apply_tick(map: &Vec<Vec<char>>, carts: &mut Vec<Cart>) -> Vec<(usize, usize)
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum Directions {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -95,44 +95,44 @@ impl Cart {
         }
     }
 
-    pub fn move_pos(&mut self, map: &Vec<Vec<char>>) {
+    pub fn move_pos(&mut self, map: &[Vec<char>]) {
         let (x, y) = self.pos;
         let mut next_x = x;
         let mut next_y = y;
         match self.dir {
-            Directions::UP => next_y -= 1,
-            Directions::DOWN => next_y += 1,
-            Directions::LEFT => next_x -= 1,
-            Directions::RIGHT => next_x += 1,
+            Directions::Up => next_y -= 1,
+            Directions::Down => next_y += 1,
+            Directions::Left => next_x -= 1,
+            Directions::Right => next_x += 1,
         }
         self.pos = (next_x, next_y);
         let next_ch = map[next_x][next_y];
         match next_ch {
             '\\' => match self.dir {
-                Directions::DOWN => self.dir = Directions::RIGHT,
-                Directions::UP => self.dir = Directions::LEFT,
-                Directions::LEFT => self.dir = Directions::UP,
-                Directions::RIGHT => self.dir = Directions::DOWN,
+                Directions::Down => self.dir = Directions::Right,
+                Directions::Up => self.dir = Directions::Left,
+                Directions::Left => self.dir = Directions::Up,
+                Directions::Right => self.dir = Directions::Down,
             },
             '/' => match self.dir {
-                Directions::DOWN => self.dir = Directions::LEFT,
-                Directions::UP => self.dir = Directions::RIGHT,
-                Directions::LEFT => self.dir = Directions::DOWN,
-                Directions::RIGHT => self.dir = Directions::UP,
+                Directions::Down => self.dir = Directions::Left,
+                Directions::Up => self.dir = Directions::Right,
+                Directions::Left => self.dir = Directions::Down,
+                Directions::Right => self.dir = Directions::Up,
             },
             '+' => {
                 match self.intersection_count % 3 {
                     0 => match self.dir {
-                        Directions::DOWN => self.dir = Directions::RIGHT,
-                        Directions::UP => self.dir = Directions::LEFT,
-                        Directions::LEFT => self.dir = Directions::DOWN,
-                        Directions::RIGHT => self.dir = Directions::UP,
+                        Directions::Down => self.dir = Directions::Right,
+                        Directions::Up => self.dir = Directions::Left,
+                        Directions::Left => self.dir = Directions::Down,
+                        Directions::Right => self.dir = Directions::Up,
                     },
                     2 => match self.dir {
-                        Directions::DOWN => self.dir = Directions::LEFT,
-                        Directions::UP => self.dir = Directions::RIGHT,
-                        Directions::LEFT => self.dir = Directions::UP,
-                        Directions::RIGHT => self.dir = Directions::DOWN,
+                        Directions::Down => self.dir = Directions::Left,
+                        Directions::Up => self.dir = Directions::Right,
+                        Directions::Left => self.dir = Directions::Up,
+                        Directions::Right => self.dir = Directions::Down,
                     },
                     _ => {
                         // keep going straight, no changes required
@@ -171,13 +171,13 @@ fn read_input(filename: &str) -> (Vec<Vec<char>>, Vec<Cart>) {
                 match ch {
                     '<' | '>' | 'v' | '^' => {
                         let dir = match ch {
-                            '<' => Directions::LEFT,
-                            '>' => Directions::RIGHT,
-                            'v' => Directions::DOWN,
-                            '^' => Directions::UP,
+                            '<' => Directions::Left,
+                            '>' => Directions::Right,
+                            'v' => Directions::Down,
+                            '^' => Directions::Up,
                             _ => panic!("Something really went wrong {}", ch),
                         };
-                        let map_value = if dir == Directions::LEFT || dir == Directions::RIGHT {
+                        let map_value = if dir == Directions::Left || dir == Directions::Right {
                             '-'
                         } else {
                             '|'

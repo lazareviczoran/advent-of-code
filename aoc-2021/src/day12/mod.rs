@@ -48,8 +48,8 @@ fn read(filename: &str) -> String {
 fn parse(content: &str) -> HashMap<&str, Vec<&str>> {
     content.lines().fold(HashMap::new(), |mut acc, l| {
         let (from, to) = l.split_once('-').unwrap();
-        acc.entry(from).or_insert_with(Vec::new).push(to);
-        acc.entry(to).or_insert_with(Vec::new).push(from);
+        acc.entry(from).or_default().push(to);
+        acc.entry(to).or_default().push(from);
 
         acc
     })

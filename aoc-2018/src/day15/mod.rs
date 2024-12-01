@@ -162,24 +162,19 @@ impl Unit {
         }
 
         let unit_type = self.unit_type;
-        let opponent_type;
-        if unit_type == 'E' {
-            opponent_type = 'G';
-        } else {
-            opponent_type = 'E';
-        }
+        let opponent_type = if unit_type == 'E' { 'G' } else { 'E' };
 
         // find closest opponents
-        let next_moves = self.find_closest_opponents(&combat_arena, opponent_type);
+        let next_moves = self.find_closest_opponents(combat_arena, opponent_type);
         // move if necessary
-        if next_moves.len() > 0 {
+        if !next_moves.is_empty() {
             self.pos = next_moves[0];
         }
 
         // battle if possible
 
         let candidates = self.get_opponent_candidates(combat_arena);
-        if candidates.len() > 0 {
+        if !candidates.is_empty() {
             for i in 0..combat_arena.units.len() {
                 if combat_arena.units[i] == candidates[0] {
                     if self.unit_type == 'E' {
@@ -213,7 +208,7 @@ impl Unit {
                 candidates.push(*unit);
             }
         }
-        candidates.sort_by(|a, b| a.health.cmp(&b.health).then(a.cmp(&b)));
+        candidates.sort_by(|a, b| a.health.cmp(&b.health).then(a.cmp(b)));
         candidates
     }
 
@@ -234,10 +229,10 @@ impl Unit {
         if has_alive_opps {
             let mut queue = vec![(x, y, 0, None)];
             let mut visited = HashMap::new();
-            let mut min_steps = usize::max_value();
+            let mut min_steps = usize::MAX;
             while !queue.is_empty() {
                 let (curr_x, curr_y, steps, mut next_move) = queue.remove(0);
-                if visited.get(&(curr_x, curr_y)).is_some() {
+                if visited.contains_key(&(curr_x, curr_y)) {
                     continue;
                 }
 
@@ -286,11 +281,11 @@ fn read_input(filename: &str) -> CombatArena {
     let mut map = Vec::new();
     let mut units = Vec::new();
 
-    let mut y = 0;
-    for s in read_to_string_in_module!(filename).split_terminator('\n') {
-        let mut x = 0;
-        let mut chars = s.chars();
-        while let Some(ch) = chars.next() {
+    for (y, s) in read_to_string_in_module!(filename)
+        .split_terminator('\n')
+        .enumerate()
+    {
+        for (x, ch) in s.chars().enumerate() {
             if ch == 'G' || ch == 'E' {
                 units.push(Unit::new(ch, (x, y)));
             }
@@ -299,9 +294,7 @@ fn read_input(filename: &str) -> CombatArena {
             } else {
                 map[x].push(ch);
             }
-            x += 1;
         }
-        y += 1;
     }
 
     CombatArena::new(map, units)

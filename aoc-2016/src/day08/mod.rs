@@ -108,12 +108,11 @@ fn read(filename: &str) -> Vec<Rect> {
                 .skip(1)
                 .filter_map(|l| {
                     let parts = l.split_terminator(' ').collect::<Vec<_>>();
-                    let side;
-                    if parts[2].starts_with('x') {
-                        side = Side::X(parts[2].split_terminator('=').rev().next()?.parse().ok()?);
+                    let side = if parts[2].starts_with('x') {
+                        Side::X(parts[2].split_terminator('=').next_back()?.parse().ok()?)
                     } else {
-                        side = Side::Y(parts[2].split_terminator('=').rev().next()?.parse().ok()?);
-                    }
+                        Side::Y(parts[2].split_terminator('=').next_back()?.parse().ok()?)
+                    };
                     Some(Rotation {
                         side,
                         step_size: parts[4].parse().ok()?,

@@ -11,14 +11,14 @@ pub fn run() {
     );
 }
 
-fn calculate_best_ingredient_score_with_calories(ingredients: &Vec<Ingredient>) -> i32 {
+fn calculate_best_ingredient_score_with_calories(ingredients: &[Ingredient]) -> i32 {
     let n = ingredients.len();
     let partitions = get_unordered_partitions(100, n as i32);
-    let permutations = get_permutations(&(0..n).collect(), n);
+    let permutations = get_permutations(&(0..n).collect::<Vec<_>>(), n);
     let mut max_score = 0;
     for p in partitions {
         for perm in &permutations {
-            let score = get_single_partition_score(&p, ingredients, &perm, Some(500));
+            let score = get_single_partition_score(&p, ingredients, perm, Some(500));
             if score > max_score {
                 max_score = score;
             }
@@ -27,14 +27,14 @@ fn calculate_best_ingredient_score_with_calories(ingredients: &Vec<Ingredient>) 
     max_score
 }
 
-fn calculate_best_ingredient_score(ingredients: &Vec<Ingredient>) -> i32 {
+fn calculate_best_ingredient_score(ingredients: &[Ingredient]) -> i32 {
     let n = ingredients.len();
     let partitions = get_unordered_partitions(100, n as i32);
-    let permutations = get_permutations(&(0..n).collect(), n);
+    let permutations = get_permutations(&(0..n).collect::<Vec<_>>(), n);
     let mut max_score = 0;
     for p in partitions {
         for perm in &permutations {
-            let score = get_single_partition_score(&p, ingredients, &perm, None);
+            let score = get_single_partition_score(&p, ingredients, perm, None);
             if score > max_score {
                 max_score = score;
             }
@@ -44,9 +44,9 @@ fn calculate_best_ingredient_score(ingredients: &Vec<Ingredient>) -> i32 {
 }
 
 fn get_single_partition_score(
-    p: &Vec<i32>,
-    ingredients: &Vec<Ingredient>,
-    perm: &Vec<usize>,
+    p: &[i32],
+    ingredients: &[Ingredient],
+    perm: &[usize],
     calories_target: Option<i32>,
 ) -> i32 {
     let n = ingredients.len();
@@ -88,7 +88,7 @@ fn get_partitions_k(n: i32, k: i32, pre: i32) -> Vec<Vec<i32>> {
         if n == 0 {
             return vec![vec![]];
         }
-        return vec![];
+        vec![]
     } else {
         (1..=min(n, pre))
             .flat_map(|i| {
@@ -103,7 +103,7 @@ fn get_partitions_k(n: i32, k: i32, pre: i32) -> Vec<Vec<i32>> {
     }
 }
 
-fn get_permutations(current_perm: &Vec<usize>, n: usize) -> Vec<Vec<usize>> {
+fn get_permutations(current_perm: &[usize], n: usize) -> Vec<Vec<usize>> {
     let mut results = Vec::new();
     if n == 1 {
         results.push(current_perm.to_vec());
@@ -125,11 +125,9 @@ fn get_permutations(current_perm: &Vec<usize>, n: usize) -> Vec<Vec<usize>> {
     results
 }
 
-fn swap(perm: &Vec<usize>, from: usize, to: usize) -> Vec<usize> {
+fn swap(perm: &[usize], from: usize, to: usize) -> Vec<usize> {
     let mut new_perm = perm.to_vec();
-    let temp = new_perm[from].clone();
-    new_perm[from] = new_perm[to].clone();
-    new_perm[to] = temp;
+    new_perm.swap(from, to);
     new_perm
 }
 

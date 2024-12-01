@@ -31,9 +31,9 @@ fn find_instruction_order_with_workers(
         }
     }
 
-    while items.len() != res.len() || res.len() == 0 {
+    while items.len() != res.len() || res.is_empty() {
         active_workers.retain(|t| t.remaining_time > 0);
-        while tree_set.len() > 0 && active_workers.len() < workers_limit {
+        while !tree_set.is_empty() && active_workers.len() < workers_limit {
             let next_id = tree_set.pop_first().unwrap();
             let task = Task::new(next_id, step_time_base);
             active_workers.push(task);
@@ -129,7 +129,7 @@ impl Task {
     pub fn new(item: char, step_time_base: usize) -> Task {
         Task {
             item,
-            remaining_time: item as u8 as usize - 'A' as u8 as usize + 1 + step_time_base,
+            remaining_time: item as u8 as usize - b'A' as usize + 1 + step_time_base,
         }
     }
 }

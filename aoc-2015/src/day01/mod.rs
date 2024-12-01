@@ -4,7 +4,7 @@ pub fn run() {
     utils::run_solution!(|| get_basement_first_enter_position(&contents), "part2");
 }
 
-fn calculate_floor(input: &String) -> i32 {
+fn calculate_floor(input: &str) -> i32 {
     let mut current_floor = 0;
     let chars = input.chars();
 
@@ -19,7 +19,7 @@ fn calculate_floor(input: &String) -> i32 {
     current_floor
 }
 
-fn get_basement_first_enter_position(input: &String) -> usize {
+fn get_basement_first_enter_position(input: &str) -> usize {
     let mut current_floor = 0;
     let mut current_pos = 1;
     let chars = input.chars();

@@ -15,13 +15,13 @@ pub fn run() {
     );
 }
 
-fn find_bugs_in_recursive_area(map: &mut Vec<Vec<char>>, iterations: usize) -> i64 {
+fn find_bugs_in_recursive_area(map: &mut [Vec<char>], iterations: usize) -> i64 {
     let mut maps: HashMap<i64, Vec<Vec<char>>> = HashMap::new();
     let width = map.len();
     let height = map[0].len();
     let empty_map = vec![vec!['.'; height]; width];
 
-    maps.insert(0, map.clone());
+    maps.insert(0, map.to_vec());
     for i in 0..iterations {
         let mut count_map: HashMap<(i64, i64, i64), (char, i64)> = HashMap::new();
         let next_inner = i as i64 + 1;
@@ -47,15 +47,15 @@ fn find_bugs_in_recursive_area(map: &mut Vec<Vec<char>>, iterations: usize) -> i
 
         for (level, level_map) in maps.iter_mut() {
             for j in 0..height {
-                for i in 0..width {
+                for (i, row) in level_map.iter_mut().enumerate().take(width) {
                     if i == 2 && j == 2 {
                         continue;
                     }
                     if let Some((val, bugs)) = count_map.get(&(i as i64, j as i64, *level)) {
                         if *val == '#' && *bugs != 1 {
-                            level_map[i][j] = '.';
+                            row[j] = '.';
                         } else if *val == '.' && (*bugs == 1 || *bugs == 2) {
-                            level_map[i][j] = '#';
+                            row[j] = '#';
                         }
                     }
                 }
@@ -73,8 +73,8 @@ fn find_bugs_in_recursive_area(map: &mut Vec<Vec<char>>, iterations: usize) -> i
         let level_map = maps.get(level).unwrap();
         if *level_map != empty_map {
             for j in 0..height {
-                for i in 0..width {
-                    if level_map[i][j] == '#' {
+                for row in level_map.iter().take(width) {
+                    if row[j] == '#' {
                         bugs_count += 1;
                     }
                 }
@@ -107,12 +107,7 @@ fn detect_adjs_recursively(
         }
     } else if next_x == 2 && y == 2 {
         if let Some(inner_map) = maps.get_mut(&inner_level) {
-            let new_x;
-            if x == 1 {
-                new_x = 0;
-            } else {
-                new_x = inner_map.len() - 1;
-            }
+            let new_x = if x == 1 { 0 } else { inner_map.len() - 1 };
             for new_y in 0..inner_map[0].len() {
                 if inner_map[new_x][new_y] == '#' {
                     count_bugs += 1;
@@ -136,12 +131,7 @@ fn detect_adjs_recursively(
         }
     } else if next_x == 2 && y == 2 {
         if let Some(inner_map) = maps.get_mut(&inner_level) {
-            let new_x;
-            if x == 1 {
-                new_x = 0;
-            } else {
-                new_x = inner_map.len() - 1;
-            }
+            let new_x = if x == 1 { 0 } else { inner_map.len() - 1 };
             for new_y in 0..inner_map[0].len() {
                 if inner_map[new_x][new_y] == '#' {
                     count_bugs += 1;
@@ -165,14 +155,9 @@ fn detect_adjs_recursively(
         }
     } else if next_y == 2 && x == 2 {
         if let Some(inner_map) = maps.get_mut(&inner_level) {
-            let new_y;
-            if y == 1 {
-                new_y = 0;
-            } else {
-                new_y = inner_map[0].len() - 1;
-            }
-            for new_x in 0..inner_map[0].len() {
-                if inner_map[new_x][new_y] == '#' {
+            let new_y = if y == 1 { 0 } else { inner_map[0].len() - 1 };
+            for row in inner_map.iter().take(inner_map[0].len()) {
+                if row[new_y] == '#' {
                     count_bugs += 1;
                 }
             }
@@ -194,14 +179,9 @@ fn detect_adjs_recursively(
         }
     } else if next_y == 2 && x == 2 {
         if let Some(inner_map) = maps.get_mut(&inner_level) {
-            let new_y;
-            if y == 1 {
-                new_y = 0;
-            } else {
-                new_y = inner_map[0].len() - 1;
-            }
-            for new_x in 0..inner_map[0].len() {
-                if inner_map[new_x][new_y] == '#' {
+            let new_y = if y == 1 { 0 } else { inner_map[0].len() - 1 };
+            for row in inner_map {
+                if row[new_y] == '#' {
                     count_bugs += 1;
                 }
             }
@@ -255,7 +235,7 @@ fn calculate_biodiversity_rating(map: &mut Vec<Vec<char>>) -> i64 {
 }
 
 fn detect_adjs(
-    map: &mut Vec<Vec<char>>,
+    map: &mut [Vec<char>],
     (x, y): (usize, usize),
     count_map: &mut HashMap<(i64, i64), (char, i64)>,
 ) {
@@ -275,17 +255,16 @@ fn detect_adjs(
     count_map.insert((x as i64, y as i64), (map[x][y], count_bugs));
 }
 
+#[allow(unused)]
 fn print_map(map: Vec<Vec<char>>) {
     // print!("{}[2J", 27 as char);
-    let w = map.len();
-    let h = map[0].len();
     let mut sb = String::new();
-    for j in 0..h {
-        for i in 0..w {
+    for j in 0..map[0].len() {
+        for (i, row) in map.iter().enumerate() {
             if i == 2 && j == 2 {
                 sb.push('?');
             } else {
-                sb.push(map[i][j]);
+                sb.push(row[j]);
             }
         }
         sb.push('\n');
@@ -296,22 +275,15 @@ fn print_map(map: Vec<Vec<char>>) {
 fn load_map(filename: &str) -> Vec<Vec<char>> {
     let map: Vec<Vec<char>> = read_to_string_in_module!(filename)
         .split_terminator('\n')
-        .map(|r| {
-            let mut chars = r.chars();
-            let mut row = Vec::new();
-            while let Some(ch) = chars.next() {
-                row.push(ch);
-            }
-            row
-        })
+        .map(|r| r.chars().collect())
         .collect();
 
     let width = map[0].len();
     let height = map.len();
     let mut res = vec![vec![' '; height]; width];
-    for i in 0..width {
+    for (i, row) in res.iter_mut().enumerate().take(width) {
         for j in 0..height {
-            res[i][j] = map[j][i];
+            row[j] = map[j][i];
         }
     }
 

@@ -19,15 +19,16 @@ impl PartialEq for Point {
 }
 
 pub fn run() {
-    let mut i = 0;
     let mut memory_map: HashMap<i64, i64> = HashMap::new();
-    for v in read_to_string_in_module!("input.txt").split_terminator(',') {
+    for (i, v) in read_to_string_in_module!("input.txt")
+        .split_terminator(',')
+        .enumerate()
+    {
         let val = v.parse::<i64>().unwrap();
-        memory_map.insert(i, val);
-        i += 1;
+        memory_map.insert(i as i64, val);
     }
 
-    let (output, _, _, _, _) = compute(&mut memory_map.clone(), &mut vec![], 0, 0, 0);
+    let (output, _, _, _, _) = compute(&mut memory_map.clone(), &[], 0, 0, 0);
     let mut camera_output = get_camera_output(output);
     let sum_of_aligment_params = calibrate_cameras(&mut camera_output);
 
@@ -42,7 +43,7 @@ pub fn run() {
 }
 
 fn get_vacuum_robot_report(memory: &mut HashMap<i64, i64>) -> i64 {
-    let (output, mut op_pos, mut rel_pos, mut input_pos, _) = compute(memory, &mut vec![], 0, 0, 0);
+    let (output, mut op_pos, mut rel_pos, mut input_pos, _) = compute(memory, &[], 0, 0, 0);
     let mut camera_output = get_camera_output(output);
     print_output(camera_output.clone());
 
@@ -54,16 +55,14 @@ fn get_vacuum_robot_report(memory: &mut HashMap<i64, i64>) -> i64 {
     );
     let (repeating_patterns, _) = find_repeting_patterns(prepared_moves.clone(), 3);
 
-    let collected_scaffolds = enter_prompted_values(
+    enter_prompted_values(
         memory,
         prepared_moves,
         repeating_patterns,
         &mut op_pos,
         &mut rel_pos,
         &mut input_pos,
-    );
-
-    collected_scaffolds
+    )
 }
 
 fn enter_prompted_values(
@@ -78,13 +77,13 @@ fn enter_prompted_values(
     let mut routines = prepared_moves.clone();
     let routine_names = ["A", "B", "C"];
     for i in 0..patterns.len() {
-        routines = routines.replace(&patterns[i], &routine_names[i]);
+        routines = routines.replace(&patterns[i], routine_names[i]);
     }
 
     println!("Entering: {}", routines);
     input.append(&mut convert_to_int_arr(routines));
     let (output, new_op_pos, new_rel_pos, new_input_pos, _) =
-        compute(memory, &mut input, *op_pos, *rel_pos, *input_pos);
+        compute(memory, &input, *op_pos, *rel_pos, *input_pos);
     *op_pos = new_op_pos;
     *rel_pos = new_rel_pos;
     *input_pos = new_input_pos;
@@ -95,7 +94,7 @@ fn enter_prompted_values(
         println!("Entering: {}", pattern);
         input.append(&mut convert_to_int_arr(pattern));
         let (output, new_op_pos, new_rel_pos, new_input_pos, _) =
-            compute(memory, &mut input, *op_pos, *rel_pos, *input_pos);
+            compute(memory, &input, *op_pos, *rel_pos, *input_pos);
         *op_pos = new_op_pos;
         *rel_pos = new_rel_pos;
         *input_pos = new_input_pos;
@@ -105,7 +104,7 @@ fn enter_prompted_values(
     input.append(&mut convert_to_int_arr("n".to_string()));
     println!("Entering: n");
     let (output, new_op_pos, new_rel_pos, new_input_pos, _) =
-        compute(memory, &mut input, *op_pos, *rel_pos, *input_pos);
+        compute(memory, &input, *op_pos, *rel_pos, *input_pos);
     *op_pos = new_op_pos;
     *rel_pos = new_rel_pos;
     *input_pos = new_input_pos;
@@ -115,7 +114,7 @@ fn enter_prompted_values(
 
 fn find_repeting_patterns(moves: String, remaining_routines: i64) -> (Vec<String>, bool) {
     if remaining_routines == 0 {
-        if moves.len() == 0 {
+        if moves.is_empty() {
             return (Vec::new(), true);
         }
         return (Vec::new(), false);
@@ -125,7 +124,7 @@ fn find_repeting_patterns(moves: String, remaining_routines: i64) -> (Vec<String
     for i in (1..15).rev() {
         let mut chunk_items = items.clone();
         chunk_items.truncate(i);
-        let mut chunk = chunk_items.join(&",");
+        let mut chunk = chunk_items.join(",");
         if chunk.len() > 20 {
             continue;
         }
@@ -148,7 +147,7 @@ fn find_repeting_patterns(moves: String, remaining_routines: i64) -> (Vec<String
             chunk.push(',');
         }
     }
-    return (Vec::new(), false);
+    (Vec::new(), false)
 }
 
 fn prepare_moves(moves: Vec<char>, initial_dir: char) -> String {
@@ -186,40 +185,14 @@ fn prepare_moves(moves: Vec<char>, initial_dir: char) -> String {
 }
 
 fn determine_rotation_move(prev_dir: char, new_dir: char) -> char {
-    match prev_dir {
-        '^' => {
-            if new_dir == '<' {
-                return 'L';
-            } else {
-                return 'R';
-            }
-        }
-        'v' => {
-            if new_dir == '<' {
-                return 'R';
-            } else {
-                return 'L';
-            }
-        }
-        '<' => {
-            if new_dir == '^' {
-                return 'R';
-            } else {
-                return 'L';
-            }
-        }
-        '>' => {
-            if new_dir == '^' {
-                return 'L';
-            } else {
-                return 'R';
-            }
-        }
+    match (prev_dir, new_dir) {
+        ('^', '>') | ('v', '<') | ('<', '^') | ('>', 'v') => 'R',
+        ('^', '<') | ('v', '>') | ('<', 'v') | ('>', '^') => 'L',
         _ => panic!("Invalid move {}", prev_dir),
     }
 }
 
-fn get_movements(camera_output: &mut Vec<Vec<char>>) -> Vec<char> {
+fn get_movements(camera_output: &mut [Vec<char>]) -> Vec<char> {
     let mut moves = Vec::new();
     let mut curr_pos = locate_start_pos(camera_output);
     let mut visited: Vec<Vec<bool>> =
@@ -261,19 +234,13 @@ fn get_camera_output(output: Vec<i64>) -> Vec<Vec<char>> {
     let rows: Vec<&str> = output_string.split_terminator('\n').collect();
     let height = rows.len();
     let mut camera_output = vec![vec!['0'; height]; width];
-    let mut j = 0;
-    let mut i;
-    for row in rows {
-        i = 0;
-        let mut items = row.chars();
-        while let Some(ch) = items.next() {
+    for (j, row) in rows.iter().enumerate() {
+        for (i, ch) in row.chars().enumerate() {
             if j >= height || i >= width {
                 return camera_output;
             }
             camera_output[i][j] = ch;
-            i += 1;
         }
-        j += 1;
     }
 
     camera_output
@@ -289,9 +256,8 @@ fn convert_to_string(array: Vec<i64>) -> String {
 }
 
 fn convert_to_int_arr(string: String) -> Vec<i64> {
-    let mut chars = string.chars();
     let mut res = Vec::new();
-    while let Some(ch) = chars.next() {
+    for ch in string.chars() {
         res.push(ch as i64);
     }
     res.push('\n' as i64);
@@ -299,7 +265,7 @@ fn convert_to_int_arr(string: String) -> Vec<i64> {
     res
 }
 
-fn calibrate_cameras(camera_output: &mut Vec<Vec<char>>) -> i64 {
+fn calibrate_cameras(camera_output: &mut [Vec<char>]) -> i64 {
     let mut curr_pos = locate_start_pos(camera_output);
     let mut visited: Vec<Vec<bool>> =
         vec![vec![false; camera_output[0].len()]; camera_output.len()];
@@ -329,8 +295,8 @@ fn calibrate_cameras(camera_output: &mut Vec<Vec<char>>) -> i64 {
 }
 
 fn move_to_next(
-    camera_output: &mut Vec<Vec<char>>,
-    visited: &mut Vec<Vec<bool>>,
+    camera_output: &mut [Vec<char>],
+    visited: &mut [Vec<bool>],
     intersections: &mut Vec<Point>,
     dir: &mut char,
     prev_pos: &Point,
@@ -350,16 +316,15 @@ fn move_to_next(
         } else {
             visited[pos.x as usize][pos.y as usize] = true;
         }
-        return Some(pos);
+        Some(pos)
     } else {
         // find new direction
         let mut next_position = None;
-        let potential_dirs;
-        if *dir == '>' || *dir == '<' {
-            potential_dirs = vec!['^', 'v'];
+        let potential_dirs = if *dir == '>' || *dir == '<' {
+            vec!['^', 'v']
         } else {
-            potential_dirs = vec!['>', '<'];
-        }
+            vec!['>', '<']
+        };
         for new_dir in potential_dirs {
             let (new_step_x, new_step_y) = determine_step(new_dir);
             let mut pos = curr_pos.clone();
@@ -374,7 +339,7 @@ fn move_to_next(
                 next_position = Some(pos);
             }
         }
-        return next_position;
+        next_position
     }
 }
 
@@ -403,7 +368,7 @@ fn determine_step(dir: char) -> (i64, i64) {
     (step_x, step_y)
 }
 
-fn locate_start_pos(camera_output: &mut Vec<Vec<char>>) -> Point {
+fn locate_start_pos(camera_output: &mut [Vec<char>]) -> Point {
     for i in 0..camera_output.len() {
         for j in 0..camera_output[0].len() {
             let curr_char = camera_output[i][j];
@@ -421,8 +386,8 @@ fn print_output(output: Vec<Vec<char>>) {
     let w = output.len();
 
     for j in 0..h {
-        for i in 0..w {
-            sb.push(output[i][j]);
+        for row in output.iter().take(w) {
+            sb.push(row[j]);
         }
         sb.push('\n');
     }
@@ -431,7 +396,7 @@ fn print_output(output: Vec<Vec<char>>) {
 
 fn compute(
     memory: &mut HashMap<i64, i64>,
-    input: &Vec<i64>,
+    input: &[i64],
     op_position: i64,
     rel_position: i64,
     input_position: usize,
@@ -469,7 +434,7 @@ fn compute(
                     return (output, op_pos, rel_base, input_pos, operation_code);
                 }
                 memory.insert(write_address, input[input_pos]);
-                input_pos = input_pos + 1;
+                input_pos += 1;
                 move_by = 2;
             }
             4 => {
@@ -522,18 +487,18 @@ fn compute(
             }
             _ => panic!("Something went wrong: {}", op_code),
         }
-        op_pos = op_pos + move_by;
+        op_pos += move_by;
     }
-    (output, -1, -1, usize::max_value(), operation_code)
+    (output, -1, -1, usize::MAX, operation_code)
 }
 
 fn get_value(memory: &mut HashMap<i64, i64>, key: i64) -> i64 {
     if let Some(value) = memory.get(&key) {
-        return *value;
+        *value
     } else {
         let value = 0;
         memory.insert(key, value);
-        return value;
+        value
     }
 }
 
@@ -544,8 +509,8 @@ fn get_argument_values(
     param_modes: Vec<i64>,
 ) -> Vec<i64> {
     let mut args = Vec::new();
-    for i in 0..param_modes.len() {
-        match param_modes[i] {
+    for (i, &mode) in param_modes.iter().enumerate() {
+        match mode {
             0 => {
                 let pos = get_value(memory, op_position + (i as i64) + 1);
                 args.push(get_value(memory, pos));
@@ -570,17 +535,15 @@ fn get_write_address(
     rel_position: i64,
     param_mode: i64,
 ) -> i64 {
-    let addr;
     let mut offset = 3;
     if op_code == 3 {
         offset = 1;
     }
     match param_mode {
-        0 => addr = get_value(memory, op_position + offset),
-        2 => addr = rel_position + get_value(memory, op_position + offset),
+        0 => get_value(memory, op_position + offset),
+        2 => rel_position + get_value(memory, op_position + offset),
         _ => panic!("Unexpected param mode"),
     }
-    addr
 }
 
 fn extract_op_code_and_param_modes(memory: &mut HashMap<i64, i64>, pos: i64) -> (i64, Vec<i64>) {
@@ -588,14 +551,13 @@ fn extract_op_code_and_param_modes(memory: &mut HashMap<i64, i64>, pos: i64) -> 
     let op_code = val % 100;
     let mut modes = Vec::new();
     let mut modes_digits = val / 100;
-    let param_num;
-    match op_code {
-        1 | 2 | 7 | 8 => param_num = 3,
-        5 | 6 => param_num = 2,
-        3 | 4 | 9 => param_num = 1,
-        99 => param_num = 0,
+    let param_num = match op_code {
+        1 | 2 | 7 | 8 => 3,
+        5 | 6 => 2,
+        3 | 4 | 9 => 1,
+        99 => 0,
         _ => panic!("Invalid op code {}", op_code),
-    }
+    };
     for _ in 0..param_num {
         modes.push(modes_digits % 10);
         modes_digits /= 10;

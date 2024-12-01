@@ -14,9 +14,9 @@ pub fn run() {
     println!("part2 solution: {}", simulate_and_count(&mut data, true));
 }
 
-fn simulate_and_count(data: &mut Vec<Vec<char>>, look_further: bool) -> usize {
+fn simulate_and_count(data: &mut [Vec<char>], look_further: bool) -> usize {
     simulate_changes(data, look_further, false);
-    count_occupied(&data)
+    count_occupied(data)
 }
 
 fn count_occupied(data: &[Vec<char>]) -> usize {
@@ -25,10 +25,10 @@ fn count_occupied(data: &[Vec<char>]) -> usize {
         .sum()
 }
 
-fn simulate_changes(data: &mut Vec<Vec<char>>, look_further: bool, visualize: bool) {
+fn simulate_changes(data: &mut [Vec<char>], look_further: bool, visualize: bool) {
     let min_occupied_required = if look_further { 5 } else { 4 };
     loop {
-        let curr_state = data.clone();
+        let curr_state = data.to_owned();
         if visualize {
             sleep(Duration::from_millis(750));
             print_map(&curr_state);

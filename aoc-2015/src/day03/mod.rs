@@ -70,10 +70,10 @@ impl Worker {
     pub fn move_to(&mut self, map: &mut HashMap<Position, usize>, dir: &Moves) {
         let mut next_pos = self.curr_pos.clone();
         match dir {
-            Moves::UP => next_pos.y += 1,
-            Moves::DOWN => next_pos.y -= 1,
-            Moves::RIGHT => next_pos.x += 1,
-            Moves::LEFT => next_pos.x -= 1,
+            Moves::Up => next_pos.y += 1,
+            Moves::Down => next_pos.y -= 1,
+            Moves::Right => next_pos.x += 1,
+            Moves::Left => next_pos.x -= 1,
         }
         self.curr_pos = next_pos.clone();
         if let Some(val) = map.get_mut(&next_pos) {
@@ -85,29 +85,29 @@ impl Worker {
 }
 
 enum Moves {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
-fn read_moves(input: &String) -> Vec<Moves> {
+fn read_moves(input: &str) -> Vec<Moves> {
     let chars = input.chars();
     let mut res = Vec::new();
     for ch in chars {
         match ch {
-            '^' => res.push(Moves::UP),
-            'v' => res.push(Moves::DOWN),
-            '>' => res.push(Moves::RIGHT),
-            '<' => res.push(Moves::LEFT),
+            '^' => res.push(Moves::Up),
+            'v' => res.push(Moves::Down),
+            '>' => res.push(Moves::Right),
+            '<' => res.push(Moves::Left),
             _ => panic!("Unexpected char {}", ch),
         }
     }
     res
 }
 
-fn get_total_houses_with_presents_count(env: &mut Environment, input: &String) -> usize {
-    let moves = read_moves(&input);
+fn get_total_houses_with_presents_count(env: &mut Environment, input: &str) -> usize {
+    let moves = read_moves(input);
     env.run(&moves)
 }
 

@@ -39,7 +39,7 @@ fn calculate_list_checksum(ids_vec: &Vec<String>) -> i32 {
     count_exactly_two * count_exactly_three
 }
 
-fn get_common_letters(ids_vec: &Vec<String>) -> String {
+fn get_common_letters(ids_vec: &[String]) -> String {
     let id_len = ids_vec[0].len();
     let mut common_letters = String::new();
     for i in 0..ids_vec.len() {

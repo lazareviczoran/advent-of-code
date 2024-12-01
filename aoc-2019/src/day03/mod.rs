@@ -43,12 +43,7 @@ fn calculate_positions(w1_moves: Vec<&str>, w2_moves: Vec<&str>) -> (Vec<Positio
     let mut pos2 = vec![Position::new(Point::new(0, 0), 0)];
     let len1 = w1_moves.len();
     let len2 = w2_moves.len();
-    let len;
-    if len1 < len2 {
-        len = len2;
-    } else {
-        len = len1;
-    }
+    let len = if len1 < len2 { len2 } else { len1 };
     for i in 0..len {
         if i < len1 {
             pos1.push(calculate_next_position(w1_moves[i], pos1[i].point.clone()));
@@ -79,8 +74,8 @@ fn get_closest_intersection_distance(
     w1_positions: Vec<Position>,
     w2_positions: Vec<Position>,
 ) -> (i32, i32) {
-    let mut distance = i32::max_value();
-    let mut first_intersection_steps_sum = i32::max_value();
+    let mut distance = i32::MAX;
+    let mut first_intersection_steps_sum = i32::MAX;
     let w1_len = w1_positions.len();
     let w2_len = w2_positions.len();
     let mut curr_line1;
@@ -120,9 +115,9 @@ fn get_closest_intersection_distance(
                     first_intersection_steps_sum = new_steps_sum;
                 }
             }
-            w2_steps_acc = w2_steps_acc + curr_line2[1].steps;
+            w2_steps_acc += curr_line2[1].steps;
         }
-        w1_steps_acc = w1_steps_acc + curr_line1[1].steps;
+        w1_steps_acc += curr_line1[1].steps;
     }
     (distance, first_intersection_steps_sum)
 }

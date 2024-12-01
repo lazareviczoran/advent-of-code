@@ -41,12 +41,12 @@ impl Grid {
         let mut small_grids = self.split();
         for sm in &mut small_grids {
             for _ in 0..4 {
-                if let Some(new_grid) = rules.get(&sm) {
+                if let Some(new_grid) = rules.get(sm) {
                     *sm = new_grid.clone();
                     break;
                 }
                 sm.flip();
-                if let Some(new_grid) = rules.get(&sm) {
+                if let Some(new_grid) = rules.get(sm) {
                     *sm = new_grid.clone();
                     break;
                 }
@@ -65,7 +65,7 @@ impl Grid {
         };
         self.items
             .chunks(grid_size)
-            .map(|chunk| {
+            .flat_map(|chunk| {
                 let mut small_grids = vec![];
                 for i in 0..self.items.len() / grid_size {
                     small_grids.push(Grid::new(
@@ -80,7 +80,6 @@ impl Grid {
                 }
                 small_grids
             })
-            .flatten()
             .collect()
     }
 
@@ -126,7 +125,7 @@ impl Grid {
     }
 }
 
-fn swap(content: &mut Vec<Vec<char>>, pos1: (usize, usize), pos2: (usize, usize)) {
+fn swap(content: &mut [Vec<char>], pos1: (usize, usize), pos2: (usize, usize)) {
     let temp = content[pos1.0][pos1.1];
     content[pos1.0][pos1.1] = content[pos2.0][pos2.1];
     content[pos2.0][pos2.1] = temp;

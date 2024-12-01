@@ -33,14 +33,14 @@ fn find_optimal_seating_arrangement(
     let mut permutations = get_permutations(
         // no need to generate all permutations, because we can have repeated order
         // therefore the first person will be fixed
-        &people_vec.get(1..people_vec.len()).unwrap().to_vec(),
+        people_vec.get(1..people_vec.len()).unwrap(),
         people_vec.len() - 1,
     );
 
-    let mut max_happiness = i32::min_value();
-    for mut perm in permutations.iter_mut() {
+    let mut max_happiness = i32::MIN;
+    for perm in permutations.iter_mut() {
         let mut every_person = vec![people_vec[0].clone()];
-        every_person.append(&mut perm);
+        every_person.append(perm);
         let val = calculate_total_happiness(&every_person, relations);
         if val > max_happiness {
             max_happiness = val;
@@ -50,10 +50,7 @@ fn find_optimal_seating_arrangement(
     max_happiness
 }
 
-fn calculate_total_happiness(
-    people: &Vec<String>,
-    relations: &HashMap<(String, String), i32>,
-) -> i32 {
+fn calculate_total_happiness(people: &[String], relations: &HashMap<(String, String), i32>) -> i32 {
     let mut total = 0;
     let num_of_people = people.len();
     for i in 0..num_of_people {
@@ -70,7 +67,7 @@ fn calculate_total_happiness(
     total
 }
 
-fn get_permutations(current_perm: &Vec<String>, n: usize) -> Vec<Vec<String>> {
+fn get_permutations(current_perm: &[String], n: usize) -> Vec<Vec<String>> {
     let mut results = Vec::new();
     if n == 1 {
         results.push(current_perm.to_vec());
@@ -92,7 +89,7 @@ fn get_permutations(current_perm: &Vec<String>, n: usize) -> Vec<Vec<String>> {
     results
 }
 
-fn swap(perm: &Vec<String>, from: usize, to: usize) -> Vec<String> {
+fn swap(perm: &[String], from: usize, to: usize) -> Vec<String> {
     let mut new_perm = perm.to_vec();
     let temp = new_perm[from].clone();
     new_perm[from] = new_perm[to].clone();
@@ -106,14 +103,9 @@ fn read_input(filename: &str) -> (HashMap<(String, String), i32>, HashSet<String
     let mut relations = HashMap::new();
     let mut people = HashSet::new();
     for string in contents.split_terminator('\n') {
-        let cap = re.captures(&string).unwrap();
+        let cap = re.captures(string).unwrap();
         let val = cap[3].parse::<i32>().unwrap();
-        let real_val;
-        if &cap[2] == "gain" {
-            real_val = val;
-        } else {
-            real_val = -val;
-        }
+        let real_val = if &cap[2] == "gain" { val } else { -val };
         people.insert(cap[1].to_string());
         relations.insert((cap[1].to_string(), cap[4].to_string()), real_val);
     }

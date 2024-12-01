@@ -316,7 +316,7 @@ mod tests {
 
     #[test]
     fn part2_test() {
-        let mut pairs = read("test-input.txt");
-        assert_eq!(find_max_sum_of_2(&mut pairs, "test-input.txt"), 3993);
+        let pairs = read("test-input.txt");
+        assert_eq!(find_max_sum_of_2(&pairs, "test-input.txt"), 3993);
     }
 }

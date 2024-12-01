@@ -21,7 +21,7 @@ pub fn run() {
     );
 }
 
-fn compute(int_list: &mut Vec<i32>) -> Vec<i32> {
+fn compute(int_list: &mut [i32]) -> Vec<i32> {
     let mut pos = 0;
     while pos < int_list.len() {
         let opcode = int_list[pos];
@@ -39,15 +39,15 @@ fn compute(int_list: &mut Vec<i32>) -> Vec<i32> {
             }
             _ => panic!("Something went wrong"),
         }
-        pos = pos + 4;
+        pos += 4;
     }
     int_list.to_vec()
 }
 
-fn find_noun_and_verb(int_list: &mut Vec<i32>, target_val: i32) -> (i32, i32) {
+fn find_noun_and_verb(int_list: &mut [i32], target_val: i32) -> (i32, i32) {
     for noun in 0..100 {
         for verb in 0..100 {
-            let mut list = int_list.clone();
+            let mut list = int_list.to_vec();
             list[1] = noun;
             list[2] = verb;
             let res_list = compute(&mut list);
@@ -65,26 +65,23 @@ mod test {
 
     #[test]
     fn part1_first_sample_input() {
-        assert_eq!(compute(&mut vec![1, 0, 0, 0, 99]), [2, 0, 0, 0, 99]);
+        assert_eq!(compute(&mut [1, 0, 0, 0, 99]), [2, 0, 0, 0, 99]);
     }
 
     #[test]
     fn part1_second_sample_input() {
-        assert_eq!(compute(&mut vec![2, 3, 0, 3, 99]), [2, 3, 0, 6, 99]);
+        assert_eq!(compute(&mut [2, 3, 0, 3, 99]), [2, 3, 0, 6, 99]);
     }
 
     #[test]
     fn part1_third_sample_input() {
-        assert_eq!(
-            compute(&mut vec![2, 4, 4, 5, 99, 0]),
-            [2, 4, 4, 5, 99, 9801]
-        );
+        assert_eq!(compute(&mut [2, 4, 4, 5, 99, 0]), [2, 4, 4, 5, 99, 9801]);
     }
 
     #[test]
     fn part1_fourth_sample_input() {
         assert_eq!(
-            compute(&mut vec![1, 1, 1, 4, 99, 5, 6, 0, 99]),
+            compute(&mut [1, 1, 1, 4, 99, 5, 6, 0, 99]),
             [30, 1, 1, 4, 2, 5, 6, 0, 99]
         );
     }

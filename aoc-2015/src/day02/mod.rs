@@ -57,7 +57,7 @@ impl Prism {
         let mut dimensions = [self.l, self.w, self.h];
         dimensions.sort();
 
-        2 * dimensions[0] + 2 * dimensions[1] + dimensions.iter().fold(1, |acc, d| acc * d)
+        2 * dimensions[0] + 2 * dimensions[1] + dimensions.iter().product::<usize>()
     }
 }
 

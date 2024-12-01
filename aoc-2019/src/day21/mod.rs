@@ -3,12 +3,13 @@ use std::collections::HashMap;
 use utils::read_to_string_in_module;
 
 pub fn run() {
-    let mut i = 0;
     let mut memory_map: HashMap<i64, i64> = HashMap::new();
-    for v in read_to_string_in_module!("input.txt").split_terminator(',') {
+    for (i, v) in read_to_string_in_module!("input.txt")
+        .split_terminator(',')
+        .enumerate()
+    {
         let val = v.parse::<i64>().unwrap();
-        memory_map.insert(i, val);
-        i += 1;
+        memory_map.insert(i as i64, val);
     }
 
     println!(
@@ -112,9 +113,8 @@ fn convert_to_string(array: Vec<i64>) -> String {
 }
 
 fn convert_to_int_arr(string: String) -> Vec<i64> {
-    let mut chars = string.chars();
     let mut res = Vec::new();
-    while let Some(ch) = chars.next() {
+    for ch in string.chars() {
         res.push(ch as i64);
     }
     res.push('\n' as i64);
@@ -124,7 +124,7 @@ fn convert_to_int_arr(string: String) -> Vec<i64> {
 
 fn compute(
     memory: &mut HashMap<i64, i64>,
-    input: &mut Vec<i64>,
+    input: &mut [i64],
     op_pos: &mut i64,
     rel_pos: &mut i64,
     input_pos: &mut usize,
@@ -157,7 +157,7 @@ fn compute(
                     return output;
                 }
                 memory.insert(write_address, input[*input_pos]);
-                *input_pos = *input_pos + 1;
+                *input_pos += 1;
                 move_by = 2;
             }
             4 => {
@@ -210,18 +210,18 @@ fn compute(
             }
             _ => panic!("Something went wrong: {}", op_code),
         }
-        *op_pos = *op_pos + move_by;
+        *op_pos += move_by;
     }
     output
 }
 
 fn get_value(memory: &mut HashMap<i64, i64>, key: i64) -> i64 {
     if let Some(value) = memory.get(&key) {
-        return *value;
+        *value
     } else {
         let value = 0;
         memory.insert(key, value);
-        return value;
+        value
     }
 }
 
@@ -232,8 +232,8 @@ fn get_argument_values(
     param_modes: Vec<i64>,
 ) -> Vec<i64> {
     let mut args = Vec::new();
-    for i in 0..param_modes.len() {
-        match param_modes[i] {
+    for (i, &mode) in param_modes.iter().enumerate() {
+        match mode {
             0 => {
                 let pos = get_value(memory, op_position + (i as i64) + 1);
                 args.push(get_value(memory, pos));
@@ -258,17 +258,15 @@ fn get_write_address(
     rel_position: i64,
     param_mode: i64,
 ) -> i64 {
-    let addr;
     let mut offset = 3;
     if op_code == 3 {
         offset = 1;
     }
     match param_mode {
-        0 => addr = get_value(memory, op_position + offset),
-        2 => addr = rel_position + get_value(memory, op_position + offset),
+        0 => get_value(memory, op_position + offset),
+        2 => rel_position + get_value(memory, op_position + offset),
         _ => panic!("Unexpected param mode"),
     }
-    addr
 }
 
 fn extract_op_code_and_param_modes(memory: &mut HashMap<i64, i64>, pos: i64) -> (i64, Vec<i64>) {
@@ -276,14 +274,13 @@ fn extract_op_code_and_param_modes(memory: &mut HashMap<i64, i64>, pos: i64) -> 
     let op_code = val % 100;
     let mut modes = Vec::new();
     let mut modes_digits = val / 100;
-    let param_num;
-    match op_code {
-        1 | 2 | 7 | 8 => param_num = 3,
-        5 | 6 => param_num = 2,
-        3 | 4 | 9 => param_num = 1,
-        99 => param_num = 0,
+    let param_num = match op_code {
+        1 | 2 | 7 | 8 => 3,
+        5 | 6 => 2,
+        3 | 4 | 9 => 1,
+        99 => 0,
         _ => panic!("Invalid op code {}", op_code),
-    }
+    };
     for _ in 0..param_num {
         modes.push(modes_digits % 10);
         modes_digits /= 10;

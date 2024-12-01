@@ -4,7 +4,7 @@ use utils::read_to_string_in_module;
 
 pub fn run() {
     let shuffle_list = load_shuffle_list("input.txt");
-    let mut deck = (0..10007 as i64).collect();
+    let mut deck = (0..10007i64).collect();
     shuffle_deck_by_list(&mut deck, &shuffle_list);
     let mut res_pos = 0;
     while deck[res_pos] != 2019 {
@@ -22,10 +22,10 @@ pub fn run() {
 fn find_nth_start_pos(
     deck_size: i64,
     target_pos: i64,
-    shuffle_list: &Vec<ShuffleType>,
+    shuffle_list: &[ShuffleType],
     iteration: i64,
 ) -> BigInt {
-    let list = shuffle_list.clone();
+    let list = shuffle_list.to_vec();
     let first = find_position(deck_size, 0, &list, 1);
     let second = find_position(deck_size, 1, &list, 1);
 
@@ -42,7 +42,7 @@ fn find_nth_start_pos(
     let mut b = ((a_k.clone() - 1) * inv) % deck_size;
     b *= first;
 
-    let inv2 = inverse_mod(BigInt::from(a_k), BigInt::from(deck_size));
+    let inv2 = inverse_mod(a_k, BigInt::from(deck_size));
 
     let mut res: BigInt = (target_pos - b) * inv2;
     res %= deck_size;
@@ -104,8 +104,8 @@ fn shuffle_deck_by_list(deck: &mut Vec<i64>, shuffle_list: &Vec<ShuffleType>) {
 
 fn deal_into_new_stack_shuffle(cards: &mut Vec<i64>) {
     let mut res = Vec::new();
-    for i in 0..cards.len() {
-        res.insert(0, cards[i]);
+    for &card in cards.iter() {
+        res.insert(0, card);
     }
     *cards = res;
 }
@@ -125,10 +125,10 @@ fn cut_shuffle(cards: &mut Vec<i64>, n: i64) {
 fn deal_with_increment_shuffle(cards: &mut Vec<i64>, n: i64) {
     let mut res = vec![-1; cards.len()];
     let cards_count = cards.len() as i64;
-    for i in 0..cards.len() {
+    for (i, &card) in cards.iter().enumerate() {
         let curr = (i as i64 * n) % cards_count;
 
-        res[curr as usize] = cards[i];
+        res[curr as usize] = card;
     }
     *cards = res;
 }
@@ -147,10 +147,7 @@ fn load_shuffle_list(filename: &str) -> Vec<ShuffleType> {
             } else {
                 name = text;
             }
-            ShuffleType {
-                name: name,
-                arg: arg,
-            }
+            ShuffleType { name, arg }
         })
         .collect()
 }
@@ -225,28 +222,28 @@ mod test {
 
     #[test]
     fn shuffle_test1() {
-        let mut deck = (0..10 as i64).collect();
+        let mut deck = (0..10i64).collect();
         deal_into_new_stack_shuffle(&mut deck);
         assert_eq!(deck, [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
     }
 
     #[test]
     fn shuffle_test2() {
-        let mut deck = (0..10 as i64).collect();
+        let mut deck = (0..10i64).collect();
         cut_shuffle(&mut deck, 3);
         assert_eq!(deck, [3, 4, 5, 6, 7, 8, 9, 0, 1, 2]);
     }
 
     #[test]
     fn shuffle_test3() {
-        let mut deck = (0..10 as i64).collect();
+        let mut deck = (0..10i64).collect();
         cut_shuffle(&mut deck, -4);
         assert_eq!(deck, [6, 7, 8, 9, 0, 1, 2, 3, 4, 5]);
     }
 
     #[test]
     fn shuffle_test4() {
-        let mut deck = (0..10 as i64).collect();
+        let mut deck = (0..10i64).collect();
         deal_with_increment_shuffle(&mut deck, 3);
         assert_eq!(deck, [0, 7, 4, 1, 8, 5, 2, 9, 6, 3]);
     }
@@ -276,7 +273,7 @@ mod test {
 
     #[test]
     fn part1_sample_input1() {
-        let mut deck = (0..10 as i64).collect();
+        let mut deck = (0..10i64).collect();
         let shuffle_list = load_shuffle_list("test-input1.txt");
         shuffle_deck_by_list(&mut deck, &shuffle_list);
         assert_eq!(deck, [0, 3, 6, 9, 2, 5, 8, 1, 4, 7]);
@@ -284,7 +281,7 @@ mod test {
 
     #[test]
     fn part1_sample_input2() {
-        let mut deck = (0..10 as i64).collect();
+        let mut deck = (0..10i64).collect();
         let shuffle_list = load_shuffle_list("test-input2.txt");
         shuffle_deck_by_list(&mut deck, &shuffle_list);
         assert_eq!(deck, [3, 0, 7, 4, 1, 8, 5, 2, 9, 6]);
@@ -292,7 +289,7 @@ mod test {
 
     #[test]
     fn part1_sample_input3() {
-        let mut deck = (0..10 as i64).collect();
+        let mut deck = (0..10i64).collect();
         let shuffle_list = load_shuffle_list("test-input3.txt");
         shuffle_deck_by_list(&mut deck, &shuffle_list);
         assert_eq!(deck, [6, 3, 0, 7, 4, 1, 8, 5, 2, 9]);
@@ -300,7 +297,7 @@ mod test {
 
     #[test]
     fn part1_sample_input4() {
-        let mut deck = (0..10 as i64).collect();
+        let mut deck = (0..10i64).collect();
         let shuffle_list = load_shuffle_list("test-input4.txt");
         shuffle_deck_by_list(&mut deck, &shuffle_list);
         assert_eq!(deck, [9, 2, 5, 8, 1, 4, 7, 0, 3, 6]);

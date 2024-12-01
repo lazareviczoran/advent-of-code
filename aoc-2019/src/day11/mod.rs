@@ -14,12 +14,13 @@ impl Point {
 }
 
 pub fn run() {
-    let mut i = 0;
     let mut memory_map: HashMap<i128, i128> = HashMap::new();
-    for v in read_to_string_in_module!("input.txt").split_terminator(',') {
+    for (i, v) in read_to_string_in_module!("input.txt")
+        .split_terminator(',')
+        .enumerate()
+    {
         let val = v.parse::<i128>().unwrap();
-        memory_map.insert(i, val);
-        i += 1;
+        memory_map.insert(i as i128, val);
     }
 
     let mut visited_map: HashMap<(i128, i128), char> = HashMap::new();
@@ -38,10 +39,10 @@ pub fn run() {
 }
 
 fn print_registration(map: &mut HashMap<(i128, i128), char>) {
-    let mut min_x = i128::max_value();
-    let mut max_x = i128::min_value();
-    let mut min_y = i128::max_value();
-    let mut max_y = i128::min_value();
+    let mut min_x = i128::MAX;
+    let mut max_x = i128::MIN;
+    let mut min_y = i128::MAX;
+    let mut max_y = i128::MIN;
     for key in map.keys() {
         let (x, y) = key;
         if min_x > *x {
@@ -108,22 +109,20 @@ fn calculate_painted_panels(
                 }
                 step_y = 0;
             }
-        } else {
-            if step_x != 0 {
-                if step_x > 0 {
-                    step_y = -1;
-                } else {
-                    step_y = 1;
-                }
-                step_x = 0;
+        } else if step_x != 0 {
+            if step_x > 0 {
+                step_y = -1;
             } else {
-                if step_y > 0 {
-                    step_x = 1;
-                } else {
-                    step_x = -1;
-                }
-                step_y = 0;
+                step_y = 1;
             }
+            step_x = 0;
+        } else {
+            if step_y > 0 {
+                step_x = 1;
+            } else {
+                step_x = -1;
+            }
+            step_y = 0;
         }
 
         current_pos.x += step_x;
@@ -151,7 +150,7 @@ fn calculate_painted_panels(
 
 fn compute(
     memory: &mut HashMap<i128, i128>,
-    input: &Vec<i128>,
+    input: &[i128],
     op_position: i128,
     rel_position: i128,
     input_position: usize,
@@ -189,7 +188,7 @@ fn compute(
                     return (output, op_pos, rel_base, input_pos, operation_code);
                 }
                 memory.insert(write_address, input[input_pos]);
-                input_pos = input_pos + 1;
+                input_pos += 1;
                 move_by = 2;
             }
             4 => {
@@ -242,18 +241,18 @@ fn compute(
             }
             _ => panic!("Something went wrong: {}", op_code),
         }
-        op_pos = op_pos + move_by;
+        op_pos += move_by;
     }
-    (output, -1, -1, usize::max_value(), operation_code)
+    (output, -1, -1, usize::MAX, operation_code)
 }
 
 fn get_value(memory: &mut HashMap<i128, i128>, key: i128) -> i128 {
     if let Some(value) = memory.get(&key) {
-        return *value;
+        *value
     } else {
         let value = 0;
         memory.insert(key, value);
-        return value;
+        value
     }
 }
 
@@ -264,8 +263,8 @@ fn get_argument_values(
     param_modes: Vec<i128>,
 ) -> Vec<i128> {
     let mut args = Vec::new();
-    for i in 0..param_modes.len() {
-        match param_modes[i] {
+    for (i, &mode) in param_modes.iter().enumerate() {
+        match mode {
             0 => {
                 let pos = get_value(memory, op_position + (i as i128) + 1);
                 args.push(get_value(memory, pos));
@@ -290,17 +289,15 @@ fn get_write_address(
     rel_position: i128,
     param_mode: i128,
 ) -> i128 {
-    let addr;
     let mut offset = 3;
     if op_code == 3 {
         offset = 1;
     }
     match param_mode {
-        0 => addr = get_value(memory, op_position + offset),
-        2 => addr = rel_position + get_value(memory, op_position + offset),
+        0 => get_value(memory, op_position + offset),
+        2 => rel_position + get_value(memory, op_position + offset),
         _ => panic!("Unexpected param mode"),
     }
-    addr
 }
 
 fn extract_op_code_and_param_modes(
@@ -311,14 +308,13 @@ fn extract_op_code_and_param_modes(
     let op_code = val % 100;
     let mut modes = Vec::new();
     let mut modes_digits = val / 100;
-    let param_num;
-    match op_code {
-        1 | 2 | 7 | 8 => param_num = 3,
-        5 | 6 => param_num = 2,
-        3 | 4 | 9 => param_num = 1,
-        99 => param_num = 0,
+    let param_num = match op_code {
+        1 | 2 | 7 | 8 => 3,
+        5 | 6 => 2,
+        3 | 4 | 9 => 1,
+        99 => 0,
         _ => panic!("Invalid op code {}", op_code),
-    }
+    };
     for _ in 0..param_num {
         modes.push(modes_digits % 10);
         modes_digits /= 10;

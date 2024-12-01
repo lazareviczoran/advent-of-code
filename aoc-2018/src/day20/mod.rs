@@ -17,7 +17,7 @@ pub fn run() {
     );
 }
 
-fn find_max_door_pass(map: &mut Vec<Vec<char>>, start_pos: &(usize, usize)) -> Vec<usize> {
+fn find_max_door_pass(map: &mut [Vec<char>], start_pos: &(usize, usize)) -> Vec<usize> {
     let (x, y) = start_pos;
     let mut queue = vec![(*x, *y, 0)];
     let mut visited = vec![vec![false; map[0].len()]; map.len()];
@@ -47,11 +47,11 @@ fn find_max_door_pass(map: &mut Vec<Vec<char>>, start_pos: &(usize, usize)) -> V
 }
 
 #[allow(unused)]
-fn print_map(map: &Vec<Vec<char>>) {
+fn print_map(map: &[Vec<char>]) {
     let mut s = String::new();
     for y in 0..map[0].len() {
-        for x in 0..map.len() {
-            s.push(map[x][y]);
+        for row in map {
+            s.push(row[y]);
         }
         s.push('\n');
     }
@@ -60,7 +60,7 @@ fn print_map(map: &Vec<Vec<char>>) {
 
 fn read_input(filename: &str) -> (Vec<Vec<char>>, (usize, usize)) {
     let content = read_to_string_in_module!(filename);
-    let mut chars = content.chars().peekable();
+    let mut chars = content.chars();
     chars.next();
     let mut directions = HashMap::new();
     directions.insert('N', (0, -1, '-'));
@@ -77,7 +77,7 @@ fn read_input(filename: &str) -> (Vec<Vec<char>>, (usize, usize)) {
     let mut curr_y = 0i32;
     let mut stack = Vec::new();
     map.entry((curr_x, curr_y)).or_insert('X');
-    while let Some(curr) = chars.next() {
+    for curr in chars {
         match curr {
             'N' | 'S' | 'E' | 'W' => {
                 let (diff_x, diff_y, door_char) = directions.get(&curr).unwrap();
@@ -117,17 +117,21 @@ fn read_input(filename: &str) -> (Vec<Vec<char>>, (usize, usize)) {
     }
 
     let mut res = Vec::new();
-    let mut curr_x = 0;
-    for x in min_x - 1..=max_x + 1 {
+    for (curr_x, x) in (min_x - 1..=max_x + 1).enumerate() {
         res.push(Vec::new());
         for y in min_y - 1..=max_y + 1 {
             let ch = map.get(&(x, y)).unwrap_or(&'#');
             res[curr_x].push(*ch);
         }
-        curr_x += 1;
     }
 
-    (res, (min_x.abs() as usize + 1, min_y.abs() as usize + 1))
+    (
+        res,
+        (
+            min_x.unsigned_abs() as usize + 1,
+            min_y.unsigned_abs() as usize + 1,
+        ),
+    )
 }
 
 #[cfg(test)]

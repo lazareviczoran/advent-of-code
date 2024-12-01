@@ -14,9 +14,8 @@ fn get_next_valid_password(current: &str) -> String {
 }
 
 fn generate_next_password(current: &str) -> String {
-    let mut chars = current.chars().rev();
     let mut res = String::new();
-    while let Some(ch) = chars.next() {
+    for ch in current.chars().rev() {
         if ch != 'z' {
             res.insert(0, (ch as u8 + 1) as char);
             res.insert_str(0, current.get(0..current.len() - res.len()).unwrap());
@@ -39,7 +38,7 @@ fn is_valid_password(password: &str) -> bool {
             return false;
         }
         if let Some(next_ch) = chars.peek() {
-            if ch == *next_ch && pairs.get(&ch).is_none() {
+            if ch == *next_ch && !pairs.contains(&ch) {
                 pairs.insert(ch);
             }
             if !has_increasing_streak_3 && *next_ch == (ch as u8 + 1) as char {
@@ -69,11 +68,11 @@ mod test {
 
     #[test]
     fn part1_is_valid() {
-        assert_eq!(is_valid_password("hijklmmn"), false);
-        assert_eq!(is_valid_password("abbceffg"), false);
-        assert_eq!(is_valid_password("abbcegjk"), false);
-        assert_eq!(is_valid_password("abcdffaa"), true);
-        assert_eq!(is_valid_password("ghjaabcc"), true);
+        assert!(!is_valid_password("hijklmmn"));
+        assert!(!is_valid_password("abbceffg"));
+        assert!(!is_valid_password("abbcegjk"));
+        assert!(is_valid_password("abcdffaa"));
+        assert!(is_valid_password("ghjaabcc"));
     }
 
     #[test]

@@ -3,12 +3,13 @@ use std::collections::HashMap;
 use utils::read_to_string_in_module;
 
 pub fn run() {
-    let mut i = 0;
     let mut memory_map: HashMap<i128, i128> = HashMap::new();
-    for v in read_to_string_in_module!("input.txt").split_terminator(',') {
+    for (i, v) in read_to_string_in_module!("input.txt")
+        .split_terminator(',')
+        .enumerate()
+    {
         let val = v.parse::<i128>().unwrap();
-        memory_map.insert(i, val);
-        i += 1;
+        memory_map.insert(i as i128, val);
     }
 
     let output = compute_boost_key_code(&mut memory_map.clone());
@@ -71,7 +72,7 @@ fn compute(
                     return (output, op_pos, rel_base, input_pos);
                 }
                 memory.insert(write_address, input[input_pos]);
-                input_pos = input_pos + 1;
+                input_pos += 1;
                 move_by = 2;
             }
             4 => {
@@ -124,18 +125,18 @@ fn compute(
             }
             _ => panic!("Something went wrong: {}", op_code),
         }
-        op_pos = op_pos + move_by;
+        op_pos += move_by;
     }
-    (output, -1, -1, usize::max_value())
+    (output, -1, -1, usize::MAX)
 }
 
 fn get_value(memory: &mut HashMap<i128, i128>, key: i128) -> i128 {
     if let Some(value) = memory.get(&key) {
-        return *value;
+        *value
     } else {
         let value = 0;
         memory.insert(key, value);
-        return value;
+        value
     }
 }
 
@@ -146,8 +147,8 @@ fn get_argument_values(
     param_modes: Vec<i128>,
 ) -> Vec<i128> {
     let mut args = Vec::new();
-    for i in 0..param_modes.len() {
-        match param_modes[i] {
+    for (i, &mode) in param_modes.iter().enumerate() {
+        match mode {
             0 => {
                 let pos = get_value(memory, op_position + (i as i128) + 1);
                 args.push(get_value(memory, pos));
@@ -172,17 +173,15 @@ fn get_write_address(
     rel_position: i128,
     param_mode: i128,
 ) -> i128 {
-    let addr;
     let mut offset = 3;
     if op_code == 3 {
         offset = 1;
     }
     match param_mode {
-        0 => addr = get_value(memory, op_position + offset),
-        2 => addr = rel_position + get_value(memory, op_position + offset),
+        0 => get_value(memory, op_position + offset),
+        2 => rel_position + get_value(memory, op_position + offset),
         _ => panic!("Unexpected param mode"),
     }
-    addr
 }
 
 fn extract_op_code_and_param_modes(
@@ -193,14 +192,13 @@ fn extract_op_code_and_param_modes(
     let op_code = val % 100;
     let mut modes = Vec::new();
     let mut modes_digits = val / 100;
-    let param_num;
-    match op_code {
-        1 | 2 | 7 | 8 => param_num = 3,
-        5 | 6 => param_num = 2,
-        3 | 4 | 9 => param_num = 1,
-        99 => param_num = 0,
+    let param_num = match op_code {
+        1 | 2 | 7 | 8 => 3,
+        5 | 6 => 2,
+        3 | 4 | 9 => 1,
+        99 => 0,
         _ => panic!("Invalid op code {}", op_code),
-    }
+    };
     for _ in 0..param_num {
         modes.push(modes_digits % 10);
         modes_digits /= 10;
@@ -217,12 +215,13 @@ mod test {
     #[test]
     fn part1_sample_input1() {
         let mut memory_map: HashMap<i128, i128> = HashMap::new();
-        let mut i = 0;
-        for v in vec![
+        for (i, v) in vec![
             109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99,
-        ] {
-            memory_map.insert(i, v);
-            i += 1;
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            memory_map.insert(i as i128, v);
         }
         let (output, _, _, _) = compute(&mut memory_map, vec![], 0, 0, 0);
         assert_eq!(
@@ -234,10 +233,11 @@ mod test {
     #[test]
     fn part1_sample_input2() {
         let mut memory_map: HashMap<i128, i128> = HashMap::new();
-        let mut i = 0;
-        for v in [1102, 34915192, 34915192, 7, 4, 7, 99, 0] {
-            memory_map.insert(i, v);
-            i += 1;
+        for (i, v) in [1102, 34915192, 34915192, 7, 4, 7, 99, 0]
+            .into_iter()
+            .enumerate()
+        {
+            memory_map.insert(i as i128, v);
         }
         let (output, _, _, _) = compute(&mut memory_map, vec![], 0, 0, 0);
         println!("{:?}", output);
@@ -245,7 +245,7 @@ mod test {
         let mut length = 0;
         while number > 0 {
             length += 1;
-            number = number / 10;
+            number /= 10;
         }
         assert_eq!(length, 16);
     }
@@ -253,10 +253,8 @@ mod test {
     #[test]
     fn part1_sample_input3() {
         let mut memory_map: HashMap<i128, i128> = HashMap::new();
-        let mut i = 0;
-        for v in [104, 1125899906842624, 99] {
-            memory_map.insert(i, v);
-            i += 1;
+        for (i, v) in [104, 1125899906842624, 99].into_iter().enumerate() {
+            memory_map.insert(i as i128, v);
         }
         let boost_key_code = compute_boost_key_code(&mut memory_map);
         assert_eq!(boost_key_code, 1125899906842624);

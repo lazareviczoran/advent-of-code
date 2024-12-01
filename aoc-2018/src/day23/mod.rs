@@ -15,7 +15,7 @@ pub fn run() {
     );
 }
 
-fn find_dist_of_coord_that_covers_most_bots(nanobots: &Vec<Nanobot>) -> i64 {
+fn find_dist_of_coord_that_covers_most_bots(nanobots: &[Nanobot]) -> i64 {
     let mut ranges_bounds = BTreeMap::new();
     for nb in nanobots.iter() {
         let dist = nb.pos.0 + nb.pos.1 + nb.pos.2;
@@ -24,7 +24,7 @@ fn find_dist_of_coord_that_covers_most_bots(nanobots: &Vec<Nanobot>) -> i64 {
     }
     let mut intervals = Vec::new();
     let mut prev = Vec::new();
-    let mut max = i64::min_value();
+    let mut max = i64::MIN;
     let mut val = 0;
     for (i, (from, count)) in ranges_bounds.iter().enumerate() {
         val += count;
@@ -38,7 +38,7 @@ fn find_dist_of_coord_that_covers_most_bots(nanobots: &Vec<Nanobot>) -> i64 {
     }
 
     let max_intervals = intervals.iter().filter(|a| a.1 == max);
-    let mut min_dist = i64::max_value();
+    let mut min_dist = i64::MAX;
     for interval in max_intervals {
         let (from, to) = interval.0;
         let val = if from.signum() == to.signum() {
@@ -53,11 +53,11 @@ fn find_dist_of_coord_that_covers_most_bots(nanobots: &Vec<Nanobot>) -> i64 {
     min_dist
 }
 
-fn find_in_range_for_strongest_nanobot(nanobots: &Vec<Nanobot>) -> i64 {
+fn find_in_range_for_strongest_nanobot(nanobots: &[Nanobot]) -> i64 {
     let mut strongest = nanobots[0];
-    for i in 1..nanobots.len() {
-        if nanobots[i].radius > strongest.radius {
-            strongest = nanobots[i];
+    for &bot in nanobots {
+        if bot.radius > strongest.radius {
+            strongest = bot;
         }
     }
     let mut in_range = 0;

@@ -22,12 +22,12 @@ fn run_test_program(op_map: &HashMap<usize, String>, commands: &Vec<Op>) -> usiz
     let mut registers = vec![0, 0, 0, 0];
     for c in commands {
         let command_code = op_map.get(&c.op_code).unwrap();
-        execute_cmd(&command_code, &c, &mut registers);
+        execute_cmd(command_code, c, &mut registers);
     }
     registers[0]
 }
 
-fn execute_cmd(command_name: &String, command: &Op, registers: &mut Vec<usize>) {
+fn execute_cmd(command_name: &String, command: &Op, registers: &mut [usize]) {
     let a = command.args[0];
     let b = command.args[1];
     let c = command.args[2];
@@ -59,7 +59,7 @@ fn detect_operations(operations: &Vec<Op>) -> HashMap<usize, String> {
         for op in operations {
             let determined_ops = operations_map.values().cloned().collect::<Vec<String>>();
             let op_code = op.op_code;
-            let mut op_candidates = find_potential_operations(&op);
+            let mut op_candidates = find_potential_operations(op);
             op_candidates.retain(|a| !determined_ops.contains(a));
             if op_candidates.len() == 1 {
                 operations_map.insert(op_code, op_candidates[0].clone());
@@ -73,7 +73,7 @@ fn detect_operations(operations: &Vec<Op>) -> HashMap<usize, String> {
 fn find_operations_count(operations: &Vec<Op>) -> usize {
     let mut count = 0;
     for op in operations {
-        if find_potential_operations(&op).len() > 2 {
+        if find_potential_operations(op).len() > 2 {
             count += 1;
         }
     }

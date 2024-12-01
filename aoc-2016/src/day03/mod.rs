@@ -62,7 +62,5 @@ fn read2(filename: &str) -> Vec<Triangle> {
     arr.extend(&col1);
     arr.extend(&col2);
     arr.extend(&col3);
-    arr.chunks_exact(3)
-        .map(|chunk| Triangle::new(chunk))
-        .collect()
+    arr.chunks_exact(3).map(Triangle::new).collect()
 }

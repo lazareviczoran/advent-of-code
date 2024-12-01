@@ -16,7 +16,7 @@ pub fn run() {
     println!(
         "Universal Orbit Map part2 Solution: {}",
         calculate_orbital_transfers_to_santa(
-            &you.parent.as_ref().unwrap(),
+            you.parent.as_ref().unwrap(),
             &nodes_map,
             0,
             HashSet::new()
@@ -74,26 +74,26 @@ fn calculate_orbits_number(
     let mut sum = curr_sum;
     for child in curr_node.children {
         let child_node = (*nodes_map).get(&child).unwrap().clone();
-        sum = sum + calculate_orbits_number(child_node, nodes_map, curr_sum + 1);
+        sum += calculate_orbits_number(child_node, nodes_map, curr_sum + 1);
     }
     sum
 }
 
 fn calculate_orbital_transfers_to_santa(
-    curr_node_id: &String,
+    curr_node_id: &str,
     nodes_map: &HashMap<String, Node>,
     curr_distance: i32,
     visited_nodes: HashSet<String>,
 ) -> i32 {
-    if is_in_same_orbit_with_santa(curr_node_id.clone(), nodes_map) {
+    if is_in_same_orbit_with_santa(curr_node_id.to_string(), nodes_map) {
         return curr_distance - 1;
     }
     let nodes_to_visit_id_list =
         get_available_nodes(curr_node_id, nodes_map, visited_nodes.clone());
     if nodes_to_visit_id_list.is_empty() {
-        return i32::max_value();
+        return i32::MAX;
     }
-    let mut min_dist = i32::max_value();
+    let mut min_dist = i32::MAX;
     for node_id in nodes_to_visit_id_list {
         let mut new_visited_nodes: HashSet<String> = visited_nodes.clone();
         new_visited_nodes.insert(node_id.clone());
@@ -107,7 +107,7 @@ fn calculate_orbital_transfers_to_santa(
             min_dist = new_dist;
         }
     }
-    return min_dist;
+    min_dist
 }
 
 fn is_in_same_orbit_with_santa(node_id: String, nodes_map: &HashMap<String, Node>) -> bool {
@@ -128,11 +128,11 @@ fn is_in_same_orbit_with_santa(node_id: String, nodes_map: &HashMap<String, Node
                 .unwrap()
         }
     }
-    return false;
+    false
 }
 
 fn get_available_nodes(
-    curr_node_id: &String,
+    curr_node_id: &str,
     nodes_map: &HashMap<String, Node>,
     visited_nodes: HashSet<String>,
 ) -> Vec<String> {
@@ -184,7 +184,7 @@ mod test {
 
         assert_eq!(
             calculate_orbital_transfers_to_santa(
-                &root.parent.as_ref().unwrap(),
+                root.parent.as_ref().unwrap(),
                 &nodes_map,
                 0,
                 HashSet::new()

@@ -35,11 +35,13 @@ fn find_polymerization_score(
     get_score(&item_counts)
 }
 
+type Memo = HashMap<((char, char), usize), HashMap<char, usize>>;
+
 fn find_polymerization_score_rec(
     formula: (char, char),
     rules: &HashMap<(char, char), char>,
     steps: usize,
-    memo: &mut HashMap<((char, char), usize), HashMap<char, usize>>,
+    memo: &mut Memo,
 ) -> HashMap<char, usize> {
     if let Some(items) = memo.get(&(formula, steps)) {
         return items.clone();

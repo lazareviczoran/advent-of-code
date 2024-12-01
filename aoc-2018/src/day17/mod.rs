@@ -24,12 +24,12 @@ impl Fields {
     pub fn new() -> Self {
         let mut map = HashMap::new();
         let water_spring_pos = (500, 0);
-        map.insert(water_spring_pos.clone(), '+');
+        map.insert(water_spring_pos, '+');
         Self {
             flow_positions: vec![water_spring_pos],
-            min_x: i32::max_value(),
+            min_x: i32::MAX,
             max_x: 0,
-            min_y: i32::max_value(),
+            min_y: i32::MAX,
             max_y: 0,
             map,
         }
@@ -42,7 +42,7 @@ impl Fields {
             for _ in 0..self.flow_positions.len() {
                 let (x, y) = self.flow_positions.remove(0);
                 let next_y = y + 1;
-                let ch = self.map.get(&(x, next_y)).or(Some(&'.')).unwrap();
+                let ch = self.map.get(&(x, next_y)).unwrap_or(&'.');
                 if *ch == '.' {
                     self.map.insert((x, next_y), '|');
                     if next_y >= self.min_y {
@@ -81,7 +81,7 @@ impl Fields {
                     let to = right_edge.0 + correction_right;
 
                     for i in from..=to {
-                        let curr = self.map.get(&(i, y)).or(Some(&'.')).unwrap();
+                        let curr = self.map.get(&(i, y)).unwrap_or(&'.');
                         if *curr != '~' && *curr != '|' {
                             total_water_count += 1;
                         }
@@ -103,8 +103,8 @@ impl Fields {
         let mut edge = (0, ' ');
         loop {
             curr_x += if dir == Direction::Left { -1 } else { 1 };
-            let curr_char = self.map.get(&(curr_x, y)).or(Some(&'.')).unwrap();
-            let bellow_char = self.map.get(&(curr_x, y + 1)).or(Some(&'.')).unwrap();
+            let curr_char = self.map.get(&(curr_x, y)).unwrap_or(&'.');
+            let bellow_char = self.map.get(&(curr_x, y + 1)).unwrap_or(&'.');
             if *curr_char == '#' {
                 edge = (curr_x, *curr_char);
             } else if *bellow_char == '.' {

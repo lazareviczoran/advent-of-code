@@ -9,7 +9,7 @@ pub fn run() {
 }
 
 fn calculate_sum(equations: &[Equation]) -> usize {
-    equations.iter().map(|eq| evaluate(eq)).sum()
+    equations.iter().map(evaluate).sum()
 }
 
 fn evaluate(equation: &Equation) -> usize {
@@ -51,10 +51,10 @@ struct Equation {
     ops: Vec<Operator>,
 }
 
-fn parse_equation(
-    chars: &mut Peekable<Chars<'_>>,
-    map_fn: &dyn Fn(&mut Vec<Value>, &mut Vec<Operator>, Value) -> Value,
-) -> Equation {
+fn parse_equation<F>(chars: &mut Peekable<Chars<'_>>, map_fn: &F) -> Equation
+where
+    F: Fn(&mut Vec<Value>, &mut Vec<Operator>, Value) -> Value,
+{
     let mut vals = Vec::new();
     let mut ops = Vec::new();
     while let Some(ch) = chars.next() {
@@ -111,10 +111,10 @@ fn read2(filename: &str) -> Vec<Equation> {
     read(filename, &wrap_if_addition)
 }
 
-fn read(
-    filename: &str,
-    map_fn: &dyn Fn(&mut Vec<Value>, &mut Vec<Operator>, Value) -> Value,
-) -> Vec<Equation> {
+fn read<F>(filename: &str, map_fn: &F) -> Vec<Equation>
+where
+    F: Fn(&mut Vec<Value>, &mut Vec<Operator>, Value) -> Value,
+{
     utils::read_to_string_in_module!(filename)
         .lines()
         .map(|l| parse_equation(&mut l.chars().peekable(), map_fn))

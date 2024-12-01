@@ -29,29 +29,28 @@ pub fn run() {
     );
 }
 
-fn destroy_asteroids(asteroid_map: &mut Vec<Vec<char>>, laser_location: Point) -> Vec<Point> {
+fn destroy_asteroids(asteroid_map: &mut [Vec<char>], laser_location: Point) -> Vec<Point> {
     let mut detected_asteroids =
         find_all_detections(asteroid_map, laser_location.x, laser_location.y);
     let mut vaporized_asteroids = Vec::new();
     let mut curr_rotation;
     let mut angles: Vec<String> = detected_asteroids.keys().cloned().collect();
     angles.sort_by(|a, b| {
-        return a
-            .parse::<f64>()
+        a.parse::<f64>()
             .unwrap()
             .partial_cmp(&b.parse::<f64>().unwrap())
-            .unwrap();
+            .unwrap()
     });
     let mut i = angles.len() - 1;
 
     while !detected_asteroids.is_empty() {
         curr_rotation = angles[i].clone();
         if let Some(array) = detected_asteroids.get_mut(&curr_rotation) {
-            if array.len() > 0 {
+            if !array.is_empty() {
                 let item = array.remove(0);
                 vaporized_asteroids.push(item);
             }
-            if array.len() == 0 {
+            if array.is_empty() {
                 detected_asteroids.remove(&curr_rotation);
             }
         }
@@ -61,7 +60,7 @@ fn destroy_asteroids(asteroid_map: &mut Vec<Vec<char>>, laser_location: Point) -
     vaporized_asteroids
 }
 
-fn find_best_detection_location(asteroid_map: &mut Vec<Vec<char>>) -> (Point, usize) {
+fn find_best_detection_location(asteroid_map: &mut [Vec<char>]) -> (Point, usize) {
     let row_count = asteroid_map.len();
     let column_count = asteroid_map[0].len();
     let mut most_detection_counts = 0;
@@ -84,7 +83,7 @@ fn find_best_detection_location(asteroid_map: &mut Vec<Vec<char>>) -> (Point, us
 }
 
 fn find_all_detections(
-    asteroid_map: &mut Vec<Vec<char>>,
+    asteroid_map: &mut [Vec<char>],
     y: i32,
     x: i32,
 ) -> HashMap<String, Vec<Point>> {
@@ -125,26 +124,19 @@ fn get_distance_between_points(p1: Point, p2: Point) -> i32 {
 fn load_map(filename: String) -> Vec<Vec<char>> {
     let asteroid_map: Vec<Vec<char>> = read_to_string_in_module!(filename)
         .split_terminator('\n')
-        .map(|r| {
-            let mut chars = r.chars();
-            let mut row = Vec::new();
-            while let Some(ch) = chars.next() {
-                row.push(ch);
-            }
-            row
-        })
+        .map(|r| r.chars().collect())
         .collect();
     asteroid_map
 }
 
 #[allow(unused)]
-fn print_map(map: &mut Vec<Vec<char>>) {
+fn print_map(map: &mut [Vec<char>]) {
     let w = map.len();
     let h = map[0].len();
     let mut sb = String::new();
-    for i in 0..w {
-        for j in 0..h {
-            sb.push(map[i][j]);
+    for row in map.iter().take(w) {
+        for &ch in row.iter() {
+            sb.push(ch);
         }
         sb.push('\n');
     }

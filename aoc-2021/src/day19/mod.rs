@@ -10,9 +10,7 @@ pub fn run() {
 
 type Point<const N: usize> = [isize; N];
 fn distance_to<const N: usize>(pos: &Point<N>, other: &Point<N>) -> isize {
-    let dist = (0..N).map(|i| (pos[i] - other[i]).pow(2)).sum::<isize>();
-    // println!("distance between {:?} and {:?} is {}", pos, other, dist);
-    dist
+    (0..N).map(|i| (pos[i] - other[i]).pow(2)).sum()
 }
 
 #[derive(Debug)]

@@ -54,7 +54,7 @@ fn is_real(room: &(String, usize, String)) -> bool {
         }
     }
     let mut most_frequent = counts.iter().collect::<Vec<_>>();
-    most_frequent.sort_by(|a, b| b.1.cmp(&a.1));
+    most_frequent.sort_by(|a, b| b.1.cmp(a.1));
 
     for curr_ch in room.2.chars() {
         let first_count = most_frequent[0].1;

@@ -13,11 +13,11 @@ pub fn run() {
     );
 }
 
-fn find_best_fuel_square(grid: &Vec<Vec<i32>>) -> (usize, usize, usize) {
+fn find_best_fuel_square(grid: &[Vec<i32>]) -> (usize, usize, usize) {
     let size = grid.len();
-    let mut sums = grid.clone();
+    let mut sums = grid.to_vec();
     let mut best = (1, 1, 1);
-    let mut best_sum = i32::min_value();
+    let mut best_sum = i32::MIN;
     for y in 1..size {
         for x in 1..size {
             sums[x][y] = grid[x][y] + sums[x][y - 1] + sums[x - 1][y] - sums[x - 1][y - 1];
@@ -42,9 +42,9 @@ fn find_best_fuel_square(grid: &Vec<Vec<i32>>) -> (usize, usize, usize) {
     best
 }
 
-fn find_best_fuel_square_3x3(grid: &Vec<Vec<i32>>) -> (usize, usize) {
+fn find_best_fuel_square_3x3(grid: &[Vec<i32>]) -> (usize, usize) {
     let mut best = (1, 1);
-    let mut best_sum = i32::min_value();
+    let mut best_sum = i32::MIN;
     let size = grid.len() - 1;
     for y in 1..=size - 3 {
         for x in 1..=size - 3 {
@@ -68,9 +68,9 @@ fn generate_grid(grid_sn: usize) -> Vec<Vec<i32>> {
     let size = 300;
     let mut grid = vec![vec![0; size + 1]; size + 1];
     for y in 1..=size {
-        for x in 1..=size {
+        for (x, row) in grid.iter_mut().enumerate().take(size + 1).skip(1) {
             let power_level = calculate_fuel_cell_power(x, y, grid_sn);
-            grid[x][y] = power_level;
+            row[y] = power_level;
         }
     }
 
@@ -79,8 +79,7 @@ fn generate_grid(grid_sn: usize) -> Vec<Vec<i32>> {
 
 fn calculate_fuel_cell_power(x: usize, y: usize, grid_sn: usize) -> i32 {
     let rack_id = x + 10;
-    let power_level = (((rack_id * y + grid_sn) * rack_id) / 100 % 10) as i32 - 5;
-    power_level
+    (((rack_id * y + grid_sn) * rack_id) / 100 % 10) as i32 - 5
 }
 
 #[cfg(test)]

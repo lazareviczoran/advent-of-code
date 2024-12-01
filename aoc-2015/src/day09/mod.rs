@@ -34,7 +34,7 @@ fn find_route_distance(
                 set_bit(mask, i as u8),
                 place,
                 &all_places,
-                &distances_map,
+                distances_map,
                 &mut dp,
                 &tsp_type,
             ),
@@ -44,7 +44,7 @@ fn find_route_distance(
     let mut res;
     match tsp_type {
         TspType::Shortest => {
-            res = usize::max_value();
+            res = usize::MAX;
             for (_, dist) in distances_from_each_place.iter() {
                 if *dist < res {
                     res = *dist;
@@ -81,7 +81,7 @@ fn tsp(
     }
     let mut ans;
     match tsp_type {
-        TspType::Shortest => ans = usize::max_value(),
+        TspType::Shortest => ans = usize::MAX,
         TspType::Longest => ans = 0,
     }
 
@@ -91,7 +91,7 @@ fn tsp(
         let distance_between = distances.get(&curr_place).unwrap().get(k);
         !has_bit(mask, *order as u8) && distance_between.is_some()
     });
-    if neighbours.len() == 0 {
+    if neighbours.is_empty() {
         return 0;
     }
     for (v, order) in neighbours.iter() {
@@ -100,10 +100,10 @@ fn tsp(
             let best_dist = tsp(
                 mask | (1 << city),
                 v.clone(),
-                &all_places,
-                &distances,
+                all_places,
+                distances,
                 dp,
-                &tsp_type,
+                tsp_type,
             );
             let new_ans = distances.get(&curr_place).unwrap().get(v).unwrap() + best_dist;
             match tsp_type {
@@ -137,12 +137,12 @@ fn has_bit(keys: usize, i: u8) -> bool {
     keys & (1 << i) == (1 << i)
 }
 
-fn load_distances_map(content: &String) -> HashMap<String, HashMap<String, usize>> {
+fn load_distances_map(content: &str) -> HashMap<String, HashMap<String, usize>> {
     let mut distances_map: HashMap<String, HashMap<String, usize>> = HashMap::new();
     let re = Regex::new(r"(.+)\sto\s(.+)\s=\s(\d+)").unwrap();
 
     for d in content.split_terminator('\n') {
-        let captures = re.captures(&d).unwrap();
+        let captures = re.captures(d).unwrap();
         let from = captures[1].to_string();
         let to = captures[2].to_string();
         let dist = captures[3].parse::<usize>().unwrap();
@@ -172,14 +172,14 @@ mod test {
     #[test]
     fn part1_input1() {
         let content = "London to Dublin = 464\nLondon to Belfast = 518\nDublin to Belfast = 141";
-        let map = load_distances_map(&content.to_string());
+        let map = load_distances_map(content);
         assert_eq!(find_route_distance(&map, TspType::Shortest), 605);
     }
 
     #[test]
     fn part2_input1() {
         let content = "London to Dublin = 464\nLondon to Belfast = 518\nDublin to Belfast = 141";
-        let map = load_distances_map(&content.to_string());
+        let map = load_distances_map(content);
         assert_eq!(find_route_distance(&map, TspType::Longest), 982);
     }
 }

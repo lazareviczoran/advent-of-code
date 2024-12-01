@@ -2,14 +2,14 @@ pub fn run() {
     let mut input = "1113122113";
     let mut res = String::new();
     for _ in 0..40 {
-        res = convert_num(&input);
+        res = convert_num(input);
         input = res.as_str();
     }
     utils::run_solution!(|| res.len(), "part1");
 
     input = "1113122113";
     for _ in 0..50 {
-        res = convert_num(&input);
+        res = convert_num(input);
         input = res.as_str();
     }
     utils::run_solution!(|| res.len(), "part2");

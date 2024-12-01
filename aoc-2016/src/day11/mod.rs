@@ -51,7 +51,7 @@ pub fn run() {
     println!("part2 solution: {}", find_min_steps(&mut floors));
 }
 
-fn find_min_steps(floors: &mut Vec<Vec<(String, String)>>) -> usize {
+fn find_min_steps(floors: &mut [Vec<(String, String)>]) -> usize {
     let items_count = floors.iter().map(|floor| floor.len()).sum::<usize>();
     let mut steps = 0;
     let mut elevator = 0;
@@ -64,7 +64,7 @@ fn find_min_steps(floors: &mut Vec<Vec<(String, String)>>) -> usize {
     steps
 }
 
-fn move_up(floors: &mut Vec<Vec<(String, String)>>, elevator: &mut usize, steps: &mut usize) {
+fn move_up(floors: &mut [Vec<(String, String)>], elevator: &mut usize, steps: &mut usize) {
     let bag = next_best_candidate_up(floors, *elevator);
 
     floors[*elevator].retain(|item| !bag.contains(item));
@@ -72,10 +72,10 @@ fn move_up(floors: &mut Vec<Vec<(String, String)>>, elevator: &mut usize, steps:
     *elevator += 1;
     *steps += 1;
 
-    floors[*elevator].extend(bag.into_iter());
+    floors[*elevator].extend(bag);
 }
 
-fn move_down(floors: &mut Vec<Vec<(String, String)>>, elevator: &mut usize, steps: &mut usize) {
+fn move_down(floors: &mut [Vec<(String, String)>], elevator: &mut usize, steps: &mut usize) {
     let bag = next_best_candidate_down(floors, *elevator);
 
     floors[*elevator].retain(|item| !bag.contains(item));
@@ -83,14 +83,14 @@ fn move_down(floors: &mut Vec<Vec<(String, String)>>, elevator: &mut usize, step
     *elevator -= 1;
     *steps += 1;
 
-    floors[*elevator].extend(bag.into_iter());
+    floors[*elevator].extend(bag);
 }
 
 fn next_best_candidate_up(
-    floors: &mut Vec<Vec<(String, String)>>,
+    floors: &mut [Vec<(String, String)>],
     elevator: usize,
 ) -> Vec<(String, String)> {
-    let (generators, chips): (Vec<(String, String)>, Vec<(String, String)>) = floors[elevator]
+    let (generators, chips): (Vec<_>, Vec<_>) = floors[elevator]
         .iter()
         .cloned()
         .partition(|item| item.1 == "generator");
@@ -126,10 +126,10 @@ fn next_best_candidate_up(
 }
 
 fn next_best_candidate_down(
-    floors: &mut Vec<Vec<(String, String)>>,
+    floors: &mut [Vec<(String, String)>],
     elevator: usize,
 ) -> Vec<(String, String)> {
-    let (generators, chips): (Vec<(String, String)>, Vec<(String, String)>) = floors[elevator]
+    let (generators, chips): (Vec<_>, Vec<_>) = floors[elevator]
         .iter()
         .cloned()
         .partition(|item| item.1 == "generator");

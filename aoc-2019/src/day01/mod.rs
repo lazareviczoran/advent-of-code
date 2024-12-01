@@ -8,8 +8,8 @@ pub fn run() {
     let mut total1 = 0;
     let mut total2 = 0;
     for mass in module_masses {
-        total1 = total1 + calculate_fuel(mass);
-        total2 = total2 + calculate_all_the_fuel(mass);
+        total1 += calculate_fuel(mass);
+        total2 += calculate_all_the_fuel(mass);
     }
 
     println!("Rocket Equasion part1 Solution: {}", total1);
@@ -26,7 +26,7 @@ fn calculate_all_the_fuel(mass: i32) -> i32 {
     if value > 0 {
         return value + calculate_all_the_fuel(value);
     }
-    return 0;
+    0
 }
 
 #[cfg(test)]

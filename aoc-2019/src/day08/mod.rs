@@ -30,17 +30,17 @@ impl Layer {
     }
 }
 
-fn calculate_visible_pixel_values(layers: &mut Vec<Layer>) -> Vec<Vec<char>> {
+fn calculate_visible_pixel_values(layers: &mut [Layer]) -> Vec<Vec<char>> {
     let mut values = vec![vec![' '; 6]; 25];
-    for i in 0..25 {
-        for j in 0..6 {
+    for (i, row) in values.iter_mut().take(25).enumerate() {
+        for (j, val) in row.iter_mut().take(6).enumerate() {
             let mut layer_index = 0;
             let mut pixel_color = layers[layer_index].values[i][j];
             while pixel_color == '2' {
-                layer_index = layer_index + 1;
+                layer_index += 1;
                 pixel_color = layers[layer_index].values[i][j];
             }
-            values[i][j] = pixel_color;
+            *val = pixel_color;
         }
     }
     values
@@ -48,8 +48,7 @@ fn calculate_visible_pixel_values(layers: &mut Vec<Layer>) -> Vec<Vec<char>> {
 
 fn calculate_layer_value(layers: &mut Vec<Layer>) -> i32 {
     let mut layer_with_min0 = Layer::new();
-    let mut curr_layer = 0;
-    let mut minimum = i32::max_value();
+    let mut minimum = i32::MAX;
 
     for layer in layers {
         let zero_count = layer.value_count.get(&'0').unwrap();
@@ -57,7 +56,6 @@ fn calculate_layer_value(layers: &mut Vec<Layer>) -> i32 {
             minimum = *zero_count;
             layer_with_min0 = layer.clone();
         }
-        curr_layer = curr_layer + 1;
     }
     layer_with_min0.value_count.get(&'1').unwrap() * layer_with_min0.value_count.get(&'2').unwrap()
 }
@@ -67,8 +65,7 @@ fn read_layers(input: String) -> Vec<Layer> {
     let mut current_layer = 0;
     let mut i = 0;
     let mut j = 0;
-    let mut input_chars = input.chars();
-    while let Some(ch) = input_chars.next() {
+    for ch in input.chars() {
         let curr = current_layer;
         if i == 0 && j == 0 {
             layers.push(Layer::new());
@@ -77,12 +74,12 @@ fn read_layers(input: String) -> Vec<Layer> {
             i = 0;
             if j == 5 {
                 j = 0;
-                current_layer = current_layer + 1;
+                current_layer += 1;
             } else {
-                j = j + 1;
+                j += 1;
             }
         } else {
-            i = i + 1;
+            i += 1;
         }
         layers[curr].values[i][j] = ch;
         if let Some(&value_count) = layers[curr].value_count.get(&ch) {
@@ -97,8 +94,8 @@ fn read_layers(input: String) -> Vec<Layer> {
 fn print_image(image: Vec<Vec<char>>) {
     let mut sb = String::new();
     for i in 0..6 {
-        for j in 0..25 {
-            match image[j][i] {
+        for row in image.iter().take(25) {
+            match row[i] {
                 '0' => sb.push(' '),
                 _ => sb.push('|'),
             }

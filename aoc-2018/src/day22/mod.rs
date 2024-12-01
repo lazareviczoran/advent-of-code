@@ -50,14 +50,14 @@ fn find_fastest_way(
             return time;
         }
 
-        for (dx, dy) in vec![(1, 0), (-1, 0), (0, 1), (0, -1)] {
+        for (dx, dy) in [(1, 0), (-1, 0), (0, 1), (0, -1)] {
             let new_x = pos.0 + dx;
             let new_y = pos.1 + dy;
             if new_x >= 0 && new_y >= 0 {
                 heap.push(State::new((new_x, new_y), tool, time + 1));
             }
         }
-        for t in vec![Tool::ClimbingGear, Tool::Torch, Tool::Neither] {
+        for t in [Tool::ClimbingGear, Tool::Torch, Tool::Neither] {
             if tool != t {
                 heap.push(State::new(pos, t, time + 7));
             }
@@ -118,7 +118,7 @@ impl Ord for State {
 }
 impl PartialOrd for State {
     fn partial_cmp(&self, other: &State) -> Option<Ordering> {
-        Some(self.cmp(&other))
+        Some(self.cmp(other))
     }
 }
 

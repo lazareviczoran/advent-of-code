@@ -81,7 +81,7 @@ pub fn run() {
     );
 }
 
-fn get_collect_keys_shortest_path2(map: &mut Vec<Vec<char>>) -> i64 {
+fn get_collect_keys_shortest_path2(map: &mut [Vec<char>]) -> i64 {
     let (robots, all_keys, _) = locate_start_pos_and_all_keys_and_doors(map);
     let distances = init_distance_map(map, &all_keys, &robots);
     println!("distances\n");
@@ -106,18 +106,17 @@ fn get_collect_keys_shortest_path2(map: &mut Vec<Vec<char>>) -> i64 {
         let mut new_remaining_keys = remaining_keys;
 
         let mut curr_pos = String::new();
-        for i in 0..robots.len() {
-            let curr_node = robots[i].clone();
+        for bot in &robots {
+            let curr_node = bot.clone();
             let curr_node_name = curr_node.name;
             curr_pos.push(curr_node_name);
             if curr_node_name.is_ascii_lowercase()
-                && has_bit(new_remaining_keys, curr_node_name as u8 - 'a' as u8)
+                && has_bit(new_remaining_keys, curr_node_name as u8 - b'a')
             {
-                new_remaining_keys =
-                    unset_bit(new_remaining_keys, curr_node_name as u8 - 'a' as u8);
+                new_remaining_keys = unset_bit(new_remaining_keys, curr_node_name as u8 - b'a');
             }
         }
-        if seen.get(&(curr_pos.clone(), new_remaining_keys)).is_some() {
+        if seen.contains(&(curr_pos.clone(), new_remaining_keys)) {
             continue;
         }
         seen.insert((curr_pos, new_remaining_keys));
@@ -134,7 +133,7 @@ fn get_collect_keys_shortest_path2(map: &mut Vec<Vec<char>>) -> i64 {
             let mut neighbours = all_keys.clone();
             neighbours.retain(|k| {
                 let distance_between = distances.get(&(curr_node_name, k.name));
-                has_bit(new_remaining_keys, k.name as u8 - 'a' as u8)
+                has_bit(new_remaining_keys, k.name as u8 - b'a')
                     && distance_between.is_some()
                     && distance_between.unwrap().doors | !new_remaining_keys == !new_remaining_keys
             });
@@ -150,7 +149,7 @@ fn get_collect_keys_shortest_path2(map: &mut Vec<Vec<char>>) -> i64 {
         }
     }
 
-    i64::max_value()
+    i64::MAX
 }
 
 fn unset_bit(keys: i64, i: u8) -> i64 {
@@ -165,7 +164,7 @@ fn has_bit(keys: i64, i: u8) -> bool {
     keys & (1 << i) == (1 << i)
 }
 
-fn get_collect_keys_shortest_path(map: &mut Vec<Vec<char>>) -> i64 {
+fn get_collect_keys_shortest_path(map: &mut [Vec<char>]) -> i64 {
     let (robots, all_keys, _) = locate_start_pos_and_all_keys_and_doors(map);
     let start_pos = robots[0].clone();
 
@@ -175,9 +174,7 @@ fn get_collect_keys_shortest_path(map: &mut Vec<Vec<char>>) -> i64 {
 
     let mask = 0;
     let mut dp: HashMap<(i64, Node), i64> = HashMap::new();
-    let shortest_path_steps = tsp(mask, start_pos.clone(), all_keys, distances, &mut dp);
-
-    shortest_path_steps
+    tsp(mask, start_pos.clone(), all_keys, distances, &mut dp)
 }
 
 fn tsp(
@@ -192,21 +189,21 @@ fn tsp(
     }
     let curr_node_name = curr_node.clone().name;
 
-    let mut ans = i64::max_value();
+    let mut ans = i64::MAX;
 
     // for each unvisited and unlocked
     let mut neighbours = all_keys.clone();
     neighbours.retain(|k| {
         let distance_between = distances.get(&(curr_node_name, k.name));
-        !has_bit(mask, k.name as u8 - 'a' as u8)
+        !has_bit(mask, k.name as u8 - b'a')
             && distance_between.is_some()
             && distance_between.unwrap().doors | mask == mask
     });
-    if neighbours.len() == 0 {
+    if neighbours.is_empty() {
         return 0;
     }
     for v in neighbours.iter() {
-        let city = v.name as u8 - 'a' as u8;
+        let city = v.name as u8 - b'a';
         if mask & (1 << city) == 0 {
             let best_dist = tsp(
                 mask | (1 << city),
@@ -226,7 +223,7 @@ fn tsp(
 }
 
 fn init_distance_map(
-    map: &mut Vec<Vec<char>>,
+    map: &mut [Vec<char>],
     keys: &HashSet<Node>,
     robots: &Vec<Node>,
 ) -> HashMap<(char, char), Distance> {
@@ -245,7 +242,7 @@ fn init_distance_map(
 }
 
 fn find_distances_from(
-    map: &mut Vec<Vec<char>>,
+    map: &mut [Vec<char>],
     distances: &mut HashMap<(char, char), Distance>,
     keys: &HashSet<Node>,
     from: &Node,
@@ -260,21 +257,23 @@ fn find_distances_from(
         let curr_pos = queue.remove(0);
         if remaining_keys.contains(&curr_pos) {
             remaining_keys.remove(&curr_pos);
-            if distances.get(&(from.name, curr_pos.name)).is_none() {
-                let mut curr_el = curr_pos.clone();
-                let mut distance = Distance::new(0);
-                while let Some(parent) = parents.get(&curr_el) {
-                    distance.value += 1;
-                    if curr_el.name.is_ascii_uppercase() {
-                        distance.doors = set_bit(distance.doors, curr_el.name as u8 - 'A' as u8);
+            distances
+                .entry((from.name, curr_pos.name))
+                .or_insert_with(|| {
+                    let mut curr_el = curr_pos.clone();
+                    let mut distance = Distance::new(0);
+                    while let Some(parent) = parents.get(&curr_el) {
+                        distance.value += 1;
+                        if curr_el.name.is_ascii_uppercase() {
+                            distance.doors = set_bit(distance.doors, curr_el.name as u8 - b'A');
+                        }
+                        curr_el = parent.clone();
                     }
-                    curr_el = parent.clone();
-                }
-                distances.insert((from.name, curr_pos.name), distance);
-            }
+                    distance
+                });
         }
         for pos in get_available_next_positions(map, &curr_pos) {
-            if visited.get(&(pos.x, pos.y)).is_none() {
+            if !visited.contains(&(pos.x, pos.y)) {
                 let new_pos = pos.clone();
                 visited.insert((pos.x, pos.y));
                 parents.insert(pos, curr_pos.clone());
@@ -285,7 +284,7 @@ fn find_distances_from(
     }
 }
 
-fn get_available_next_positions(map: &mut Vec<Vec<char>>, curr_pos: &Node) -> Vec<Node> {
+fn get_available_next_positions(map: &mut [Vec<char>], curr_pos: &Node) -> Vec<Node> {
     let mut next_positions = Vec::new();
     let mut next_pos = curr_pos.clone();
     next_pos.x -= 1;
@@ -315,12 +314,12 @@ fn get_available_next_positions(map: &mut Vec<Vec<char>>, curr_pos: &Node) -> Ve
     next_positions
 }
 
-fn get_value(map: &mut Vec<Vec<char>>, curr_pos: &Node) -> char {
+fn get_value(map: &mut [Vec<char>], curr_pos: &Node) -> char {
     map[curr_pos.x as usize][curr_pos.y as usize]
 }
 
 fn locate_start_pos_and_all_keys_and_doors(
-    map: &mut Vec<Vec<char>>,
+    map: &mut [Vec<char>],
 ) -> (Vec<Node>, HashSet<Node>, HashSet<Node>) {
     let mut robot_count = 1;
     let mut robots = Vec::new();
@@ -352,26 +351,19 @@ fn locate_start_pos_and_all_keys_and_doors(
 fn load_map(filename: String) -> Vec<Vec<char>> {
     let asteroid_map: Vec<Vec<char>> = read_to_string_in_module!(filename)
         .split_terminator('\n')
-        .map(|r| {
-            let mut chars = r.chars();
-            let mut row = Vec::new();
-            while let Some(ch) = chars.next() {
-                row.push(ch);
-            }
-            row
-        })
+        .map(|r| r.chars().collect())
         .collect();
     asteroid_map
 }
 
-fn print_map(map: &mut Vec<Vec<char>>) {
+fn print_map(map: &mut [Vec<char>]) {
     // print!("{}[2J", 27 as char);
     let w = map.len();
     let h = map[0].len();
     let mut sb = String::new();
-    for i in 0..w {
-        for j in 0..h {
-            sb.push(map[i][j]);
+    for row in map.iter().take(w) {
+        for &ch in row.iter().take(h) {
+            sb.push(ch);
         }
         sb.push('\n');
     }
@@ -381,9 +373,9 @@ fn print_map(map: &mut Vec<Vec<char>>) {
 fn print_distances(map: &HashMap<(char, char), Distance>, robots: Vec<Node>) {
     let mut string = String::new();
     string.push_str(format!("{:4}", ' ').as_str());
-    let mut keys: Vec<char> = (0..26).map(|x| ('a' as u8 + x) as char).collect();
-    for i in 0..robots.len() {
-        keys.insert(i, robots[i].name);
+    let mut keys: Vec<char> = (0..26).map(|x| (b'a' + x) as char).collect();
+    for (i, robot) in robots.iter().enumerate() {
+        keys.insert(i, robot.name);
     }
     for i in keys.clone() {
         string.push_str(format!("{:4}", i).as_str());

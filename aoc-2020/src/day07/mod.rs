@@ -52,7 +52,7 @@ fn read(filename: &str) -> HashMap<String, Vec<(usize, String)>> {
                     let required_vals: Vec<&str> = st.trim().splitn(2, ' ').collect();
                     (
                         required_vals[0].parse().unwrap(),
-                        required_vals[1].rsplitn(2, ' ').nth(1).unwrap().into(),
+                        required_vals[1].rsplit_once(' ').unwrap().0.to_string(),
                     )
                 })
                 .collect();

@@ -3,7 +3,7 @@ pub fn run() {
 
     let strings = contents
         .split_terminator('\n')
-        .map(|s| format!("{}", s))
+        .map(|s| s.to_string())
         .collect();
     utils::run_solution!(|| calculate_total_decoded_diff(&strings), "part1");
     utils::run_solution!(|| calculate_total_encoded_diff(&strings), "part2");
@@ -33,8 +33,7 @@ fn calculate_total_encoded_diff(strings: &Vec<String>) -> usize {
 
 fn get_encoded_string_length(string: &str) -> usize {
     let mut res = String::from("\"");
-    let mut chars = string.chars().peekable();
-    while let Some(ch) = chars.next() {
+    for ch in string.chars() {
         if ch == '\\' || ch == '"' {
             res.push('\\');
         }
@@ -89,21 +88,23 @@ mod test {
 
     #[test]
     fn part1_input1() {
-        let mut strings = Vec::new();
-        strings.push(format!("{}", r#""""#));
-        strings.push(format!("{}", r#""abc""#));
-        strings.push(format!("{}", r#""aaa\"aaa""#));
-        strings.push(format!("{}", r#""\x27""#));
+        let strings = vec![
+            format!("{}", r#""""#),
+            format!("{}", r#""abc""#),
+            format!("{}", r#""aaa\"aaa""#),
+            format!("{}", r#""\x27""#),
+        ];
         assert_eq!(calculate_total_decoded_diff(&strings), 12);
     }
 
     #[test]
     fn part2_input1() {
-        let mut strings = Vec::new();
-        strings.push(format!("{}", r#""""#));
-        strings.push(format!("{}", r#""abc""#));
-        strings.push(format!("{}", r#""aaa\"aaa""#));
-        strings.push(format!("{}", r#""\x27""#));
+        let strings = vec![
+            format!("{}", r#""""#),
+            format!("{}", r#""abc""#),
+            format!("{}", r#""aaa\"aaa""#),
+            format!("{}", r#""\x27""#),
+        ];
         assert_eq!(calculate_total_encoded_diff(&strings), 19);
     }
 }

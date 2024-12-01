@@ -11,7 +11,7 @@ fn count_matches(data: &(HashMap<usize, Vec<Value>>, Vec<String>)) -> usize {
     data.1
         .iter()
         .filter(|msg| {
-            let hits = matches_rule(&msg, &data.0, 0, &mut memo);
+            let hits = matches_rule(msg, &data.0, 0, &mut memo);
             !hits.is_empty() && hits.iter().any(|&i| i == msg.len())
         })
         .count()
@@ -83,17 +83,15 @@ fn read(filename: &str) -> (HashMap<usize, Vec<Value>>, Vec<String>) {
             let rules = items[1]
                 .split_terminator(" | ")
                 .map(|r| {
-                    let v: Value;
                     if r.starts_with('"') {
-                        v = Value::String(r.get(1..2).unwrap().to_string());
+                        Value::String(r.get(1..2).unwrap().to_string())
                     } else {
-                        v = Value::Rules(
+                        Value::Rules(
                             r.split_whitespace()
                                 .filter_map(|val| val.parse().ok())
                                 .collect(),
-                        );
+                        )
                     }
-                    v
                 })
                 .collect();
             (items[0].parse().unwrap(), rules)

@@ -3,12 +3,13 @@ use std::collections::HashMap;
 use utils::read_to_string_in_module;
 
 pub fn run() {
-    let mut i = 0;
     let mut memory_map: HashMap<i64, i64> = HashMap::new();
-    for v in read_to_string_in_module!("input.txt").split_terminator(',') {
+    for (i, v) in read_to_string_in_module!("input.txt")
+        .split_terminator(',')
+        .enumerate()
+    {
         let val = v.parse::<i64>().unwrap();
-        memory_map.insert(i, val);
-        i += 1;
+        memory_map.insert(i as i64, val);
     }
 
     println!(
@@ -33,7 +34,7 @@ struct Computer {
 impl Computer {
     pub fn new(memory: HashMap<i64, i64>, i: i64) -> Computer {
         Computer {
-            memory: memory,
+            memory,
             op_pos: 0,
             rel_pos: 0,
             input_pos: 0,
@@ -57,7 +58,7 @@ fn find_first_duplicate_from_nat(memory: &mut HashMap<i64, i64>) -> i64 {
 
     loop {
         for i in 0..50 {
-            if network_queue[i].len() > 0 {
+            if !network_queue[i].is_empty() {
                 while !network_queue[i].is_empty() {
                     let (x, y) = network_queue[i].remove(0);
                     computers[i].input.push(x);
@@ -69,8 +70,8 @@ fn find_first_duplicate_from_nat(memory: &mut HashMap<i64, i64>) -> i64 {
             read_package(&mut computers[i], &mut nat, &mut network_queue);
         }
         let mut is_idle = true;
-        for i in 0..50 {
-            is_idle = is_idle && network_queue[i].is_empty();
+        for queue in network_queue.iter().take(50) {
+            is_idle = is_idle && queue.is_empty();
         }
         if is_idle {
             let (x, y) = nat;
@@ -91,7 +92,7 @@ fn find_first_duplicate_from_nat(memory: &mut HashMap<i64, i64>) -> i64 {
 fn read_package(
     computer: &mut Computer,
     nat: &mut (i64, i64),
-    network_queue: &mut Vec<Vec<(i64, i64)>>,
+    network_queue: &mut [Vec<(i64, i64)>],
 ) {
     let mut output = compute(computer);
     while !output.is_empty() {
@@ -119,7 +120,7 @@ fn find_y_sent_to_255(memory: &mut HashMap<i64, i64>) -> i64 {
 
     loop {
         for i in 0..50 {
-            if network_queue[i].len() > 0 {
+            if !network_queue[i].is_empty() {
                 while !network_queue[i].is_empty() {
                     let (x, y) = network_queue[i].remove(0);
                     computers[i].input.push(x);
@@ -199,7 +200,7 @@ fn compute(computer: &mut Computer) -> Vec<i64> {
                 computer
                     .memory
                     .insert(write_address, computer.input[computer.input_pos]);
-                computer.input_pos = computer.input_pos + 1;
+                computer.input_pos += 1;
                 move_by = 2;
             }
             4 => {
@@ -292,18 +293,18 @@ fn compute(computer: &mut Computer) -> Vec<i64> {
             }
             _ => panic!("Something went wrong: {}", op_code),
         }
-        computer.op_pos = computer.op_pos + move_by;
+        computer.op_pos += move_by;
     }
     output
 }
 
 fn get_value(memory: &mut HashMap<i64, i64>, key: i64) -> i64 {
     if let Some(value) = memory.get(&key) {
-        return *value;
+        *value
     } else {
         let value = 0;
         memory.insert(key, value);
-        return value;
+        value
     }
 }
 
@@ -314,8 +315,8 @@ fn get_argument_values(
     param_modes: Vec<i64>,
 ) -> Vec<i64> {
     let mut args = Vec::new();
-    for i in 0..param_modes.len() {
-        match param_modes[i] {
+    for (i, &mode) in param_modes.iter().enumerate() {
+        match mode {
             0 => {
                 let pos = get_value(memory, op_position + (i as i64) + 1);
                 args.push(get_value(memory, pos));
@@ -340,17 +341,15 @@ fn get_write_address(
     rel_position: i64,
     param_mode: i64,
 ) -> i64 {
-    let addr;
     let mut offset = 3;
     if op_code == 3 {
         offset = 1;
     }
     match param_mode {
-        0 => addr = get_value(memory, op_position + offset),
-        2 => addr = rel_position + get_value(memory, op_position + offset),
+        0 => get_value(memory, op_position + offset),
+        2 => rel_position + get_value(memory, op_position + offset),
         _ => panic!("Unexpected param mode"),
     }
-    addr
 }
 
 fn extract_op_code_and_param_modes(memory: &mut HashMap<i64, i64>, pos: i64) -> (i64, Vec<i64>) {
@@ -358,14 +357,13 @@ fn extract_op_code_and_param_modes(memory: &mut HashMap<i64, i64>, pos: i64) -> 
     let op_code = val % 100;
     let mut modes = Vec::new();
     let mut modes_digits = val / 100;
-    let param_num;
-    match op_code {
-        1 | 2 | 7 | 8 => param_num = 3,
-        5 | 6 => param_num = 2,
-        3 | 4 | 9 => param_num = 1,
-        99 => param_num = 0,
+    let param_num = match op_code {
+        1 | 2 | 7 | 8 => 3,
+        5 | 6 => 2,
+        3 | 4 | 9 => 1,
+        99 => 0,
         _ => panic!("Invalid op code {}", op_code),
-    }
+    };
     for _ in 0..param_num {
         modes.push(modes_digits % 10);
         modes_digits /= 10;

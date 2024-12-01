@@ -23,7 +23,7 @@ pub fn run() {
 fn calculate_node_value(tree: &HashMap<usize, Node>, curr_node_id: usize) -> usize {
     let node = tree.get(&curr_node_id).unwrap();
     let mut sum = 0;
-    if node.children.len() == 0 {
+    if node.children.is_empty() {
         sum = node.metadata_entries.iter().fold(sum, |acc, e| acc + e);
     } else {
         sum = node.metadata_entries.iter().fold(sum, |acc, e| {
@@ -40,7 +40,7 @@ fn calculate_node_value(tree: &HashMap<usize, Node>, curr_node_id: usize) -> usi
 
 fn calculate_metadata_sum(tree: &HashMap<usize, Node>, curr_node_id: usize) -> usize {
     let node = tree.get(&curr_node_id).unwrap();
-    let mut sum = node.metadata_entries.iter().fold(0, |acc, e| acc + e);
+    let mut sum = node.metadata_entries.iter().sum();
     sum = node
         .children
         .iter()

@@ -121,10 +121,10 @@ impl Combat {
     }
 }
 
-fn find_target(group: &mut Group, potential_targets: &mut Vec<Group>) -> Option<i32> {
+fn find_target(group: &mut Group, potential_targets: &mut [Group]) -> Option<i32> {
     let mut candidates = Vec::new();
     for pt in potential_targets.iter() {
-        let damage = group.calculate_damage(&pt);
+        let damage = group.calculate_damage(pt);
         if !pt.taken && damage > 0 {
             candidates.push((damage, pt.effective_power(), pt.initiative));
         }
@@ -159,6 +159,7 @@ struct Group {
     taken: bool,
 }
 impl Group {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         units: i32,
         hit_points: i32,
@@ -207,7 +208,7 @@ impl Ord for Group {
 }
 impl PartialOrd for Group {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(&other))
+        Some(self.cmp(other))
     }
 }
 

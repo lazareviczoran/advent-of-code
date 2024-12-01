@@ -91,7 +91,7 @@ fn apply_transformations(pots: &mut BTreeMap<i32, char>, patterns: &BTreeMap<Str
         let mut pot_range = String::new();
         pot_range.push(*current_pots.get(&(pos - 2)).unwrap_or(&'.'));
         pot_range.push(*current_pots.get(&(pos - 1)).unwrap_or(&'.'));
-        pot_range.push(*current_pots.get(&(pos)).unwrap());
+        pot_range.push(*current_pots.get(pos).unwrap());
         pot_range.push(*current_pots.get(&(pos + 1)).unwrap_or(&'.'));
         pot_range.push(*current_pots.get(&(pos + 2)).unwrap_or(&'.'));
         if let Some(new_val) = patterns.get(&pot_range) {

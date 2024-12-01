@@ -12,10 +12,10 @@ fn get_potential_password_count() -> (i32, i32) {
     for pass in 137683..=596253 {
         let (is_valid, is_valid_with_extra_rule) = is_valid_password(pass);
         if is_valid {
-            count = count + 1;
+            count += 1;
         }
         if is_valid_with_extra_rule {
-            count2 = count2 + 1;
+            count2 += 1;
         }
     }
     (count, count2)
@@ -28,20 +28,17 @@ fn is_valid_password(password: i32) -> (bool, bool) {
 
     let mut prev_char: char = ' ';
     let str_pass = password.to_string();
-    let mut str_pass_chars = str_pass.chars();
     let mut has_repeated_digits = false;
     let mut repeadet_digits: HashMap<char, i32> = HashMap::new();
-    while let Some(digit) = str_pass_chars.next() {
+    for digit in str_pass.chars() {
         if prev_char != ' ' {
-            if prev_char > digit {
-                return (false, false);
-            } else if prev_char == digit {
-                has_repeated_digits = true;
-                if let Some(digit_count) = repeadet_digits.get(&digit) {
-                    repeadet_digits.insert(digit, digit_count + 1);
-                } else {
-                    repeadet_digits.insert(digit, 1);
+            match prev_char.cmp(&digit) {
+                std::cmp::Ordering::Less => {}
+                std::cmp::Ordering::Equal => {
+                    has_repeated_digits = true;
+                    *repeadet_digits.entry(digit).or_default() += 1;
                 }
+                std::cmp::Ordering::Greater => return (false, false),
             }
         }
         prev_char = digit;
@@ -49,7 +46,7 @@ fn is_valid_password(password: i32) -> (bool, bool) {
 
     return (
         has_repeated_digits,
-        repeadet_digits.values().find(|&&v| v == 1).is_some(),
+        repeadet_digits.values().any(|&v| v == 1),
     );
 }
 

@@ -19,7 +19,7 @@ pub fn run() {
     );
 }
 
-fn compute(memory: &mut Vec<i32>, input: i32) -> Vec<i32> {
+fn compute(memory: &mut [i32], input: i32) -> Vec<i32> {
     let mut output = Vec::new();
     let mut op_position = 0;
     while op_position < memory.len() {
@@ -88,7 +88,7 @@ fn compute(memory: &mut Vec<i32>, input: i32) -> Vec<i32> {
             }
             _ => panic!("Something went wrong"),
         }
-        op_position = op_position + move_by;
+        op_position += move_by;
     }
     output
 }
@@ -123,8 +123,8 @@ fn extract_op_code_and_param_modes(memory: Vec<i32>, pos: usize) -> (i32, Vec<i3
     let mut i = 0;
     while modes_digits > 0 {
         modes[i] = modes_digits % 10;
-        modes_digits = modes_digits / 10;
-        i = i + 1;
+        modes_digits /= 10;
+        i += 1;
     }
     (op_code, modes)
 }
@@ -135,7 +135,7 @@ mod test {
 
     #[test]
     fn part1_sample_input1() {
-        assert_eq!(compute(&mut vec![3, 0, 4, 0, 99], 1), [1]);
+        assert_eq!(compute(&mut [3, 0, 4, 0, 99], 1), [1]);
     }
 
     #[test]

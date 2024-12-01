@@ -10,7 +10,7 @@ pub fn run() {
     );
 }
 
-fn find_constellation_count(points: &Vec<Vec<i32>>) -> i32 {
+fn find_constellation_count(points: &[Vec<i32>]) -> i32 {
     let mut graph = HashMap::new();
     let mut remaining = HashSet::new();
     for p1 in 0..points.len() {

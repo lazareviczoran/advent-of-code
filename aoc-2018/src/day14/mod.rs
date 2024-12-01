@@ -30,7 +30,7 @@ fn find_score_after_nth_recipe(n: usize) -> usize {
     get_score(&recipes, n, 10)
 }
 
-fn get_score(recipes: &Vec<usize>, start: usize, range: usize) -> usize {
+fn get_score(recipes: &[usize], start: usize, range: usize) -> usize {
     let mut res = 0;
     for i in 0..range {
         res *= 10;
@@ -81,7 +81,7 @@ mod test {
 
     #[test]
     fn part1_test2() {
-        assert_eq!(find_score_after_nth_recipe(5), 0124515891);
+        assert_eq!(find_score_after_nth_recipe(5), 124515891);
     }
 
     #[test]

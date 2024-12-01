@@ -49,7 +49,7 @@ fn build_connections(instructions: &Vec<&str>) -> HashMap<String, Connection> {
 
     for i in instructions {
         if i.contains("AND") {
-            let captures = dual_op_regex.captures(&i).unwrap();
+            let captures = dual_op_regex.captures(i).unwrap();
             map.insert(
                 captures[4].to_string(),
                 Connection::new(
@@ -58,7 +58,7 @@ fn build_connections(instructions: &Vec<&str>) -> HashMap<String, Connection> {
                 ),
             );
         } else if i.contains("OR") {
-            let captures = dual_op_regex.captures(&i).unwrap();
+            let captures = dual_op_regex.captures(i).unwrap();
             map.insert(
                 captures[4].to_string(),
                 Connection::new(
@@ -67,7 +67,7 @@ fn build_connections(instructions: &Vec<&str>) -> HashMap<String, Connection> {
                 ),
             );
         } else if i.contains("LSHIFT") {
-            let captures = dual_op_regex.captures(&i).unwrap();
+            let captures = dual_op_regex.captures(i).unwrap();
             map.insert(
                 captures[4].to_string(),
                 Connection::new(
@@ -76,7 +76,7 @@ fn build_connections(instructions: &Vec<&str>) -> HashMap<String, Connection> {
                 ),
             );
         } else if i.contains("RSHIFT") {
-            let captures = dual_op_regex.captures(&i).unwrap();
+            let captures = dual_op_regex.captures(i).unwrap();
             map.insert(
                 captures[4].to_string(),
                 Connection::new(
@@ -85,13 +85,13 @@ fn build_connections(instructions: &Vec<&str>) -> HashMap<String, Connection> {
                 ),
             );
         } else if i.contains("NOT") {
-            let captures = not_op_regex.captures(&i).unwrap();
+            let captures = not_op_regex.captures(i).unwrap();
             map.insert(
                 captures[2].to_string(),
                 Connection::new(vec![captures[1].to_string()], Operator::Not),
             );
         } else {
-            let captures = assign_op_regex.captures(&i).unwrap();
+            let captures = assign_op_regex.captures(i).unwrap();
             let parsed_val = captures[1].parse::<u16>();
             if parsed_val.is_ok() {
                 let mut connection = Connection::new(vec![], Operator::Assign);
@@ -116,8 +116,8 @@ fn get_value(map: &mut HashMap<String, Connection>, target_wire: &str) -> u16 {
     let mut values = Vec::new();
     for conn in connection.args.clone() {
         let parsed_val = conn.parse::<u16>();
-        if parsed_val.is_ok() {
-            values.push(parsed_val.unwrap());
+        if let Ok(val) = parsed_val {
+            values.push(val);
         } else {
             values.push(get_value(map, &conn));
         }

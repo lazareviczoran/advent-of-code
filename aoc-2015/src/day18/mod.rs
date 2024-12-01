@@ -6,23 +6,15 @@ pub fn run() {
     utils::run_solution!(|| animate_v2(&fields, 100), "part2");
 }
 
-fn count_turned_on_lights(fields: &Vec<Vec<char>>) -> usize {
-    let mut on_count = 0;
-    let w = fields.len();
-    let h = fields[0].len();
-    for j in 0..h {
-        for i in 0..w {
-            if is_turned_on(fields[i][j]) {
-                on_count += 1;
-            }
-        }
-    }
-
-    on_count
+fn count_turned_on_lights(fields: &[Vec<char>]) -> usize {
+    fields
+        .iter()
+        .map(|row| row.iter().filter(|&&c| is_turned_on(c)).count())
+        .sum()
 }
 
-fn animate_v2(fields: &Vec<Vec<char>>, iterations: usize) -> usize {
-    let mut curr_fields = fields.clone();
+fn animate_v2(fields: &[Vec<char>], iterations: usize) -> usize {
+    let mut curr_fields = fields.to_vec();
     turn_on_corner_lights(&mut curr_fields);
     for _ in 0..iterations {
         let next_fields = apply_animation_step(&curr_fields);
@@ -33,8 +25,8 @@ fn animate_v2(fields: &Vec<Vec<char>>, iterations: usize) -> usize {
     count_turned_on_lights(&curr_fields)
 }
 
-fn animate(fields: &Vec<Vec<char>>, iterations: usize) -> usize {
-    let mut curr_fields = fields.clone();
+fn animate(fields: &[Vec<char>], iterations: usize) -> usize {
+    let mut curr_fields = fields.to_vec();
     for _ in 0..iterations {
         let next_fields = apply_animation_step(&curr_fields);
         curr_fields = next_fields;
@@ -43,7 +35,7 @@ fn animate(fields: &Vec<Vec<char>>, iterations: usize) -> usize {
     count_turned_on_lights(&curr_fields)
 }
 
-fn apply_animation_step(fields: &Vec<Vec<char>>) -> Vec<Vec<char>> {
+fn apply_animation_step(fields: &[Vec<char>]) -> Vec<Vec<char>> {
     let on_char = '#';
     let off_char = '.';
     let w = fields.len();
@@ -66,7 +58,7 @@ fn apply_animation_step(fields: &Vec<Vec<char>>) -> Vec<Vec<char>> {
     res
 }
 
-fn check_neighbors(fields: &Vec<Vec<char>>, pos: (usize, usize)) -> (usize, usize) {
+fn check_neighbors(fields: &[Vec<char>], pos: (usize, usize)) -> (usize, usize) {
     let (x, y) = pos;
     let mut from_x = x;
     let mut to_x = x;
@@ -90,11 +82,11 @@ fn check_neighbors(fields: &Vec<Vec<char>>, pos: (usize, usize)) -> (usize, usiz
     }
     let mut count_on = 0;
     for j in from_y..=to_y {
-        for i in from_x..=to_x {
+        for (i, row) in fields.iter().enumerate().take(to_x + 1).skip(from_x) {
             if i == x && j == y {
                 continue;
             }
-            if is_turned_on(fields[i][j]) {
+            if is_turned_on(row[j]) {
                 count_on += 1;
             }
         }
@@ -111,7 +103,7 @@ fn is_turned_on(light: char) -> bool {
     }
 }
 
-fn turn_on_corner_lights(fields: &mut Vec<Vec<char>>) {
+fn turn_on_corner_lights(fields: &mut [Vec<char>]) {
     let w = fields.len() - 1;
     let h = fields[0].len() - 1;
     for (x, y) in [(0, 0), (w, 0), (0, h), (w, h)].iter() {
@@ -120,13 +112,13 @@ fn turn_on_corner_lights(fields: &mut Vec<Vec<char>>) {
 }
 
 #[allow(unused)]
-fn print_fields(fields: &Vec<Vec<char>>) {
+fn print_fields(fields: &[Vec<char>]) {
     let w = fields.len();
     let h = fields[0].len();
     let mut string = String::new();
-    for j in 0..h {
-        for i in 0..w {
-            string.push(fields[i][j]);
+    for row in fields {
+        for ch in row {
+            string.push(*ch);
         }
         string.push('\n');
     }
@@ -137,15 +129,10 @@ fn print_fields(fields: &Vec<Vec<char>>) {
 fn read_input(filename: &str, size: usize) -> Vec<Vec<char>> {
     let contents = utils::read_to_string_in_module!(filename);
     let mut fields = vec![vec![' '; size]; size];
-    let mut curr_y = 0;
-    for x in contents.split_terminator('\n') {
-        let mut chars = x.chars();
-        let mut curr_x = 0;
-        while let Some(ch) = chars.next() {
+    for (curr_y, x) in contents.split_terminator('\n').enumerate() {
+        for (curr_x, ch) in x.chars().enumerate() {
             fields[curr_x][curr_y] = ch;
-            curr_x += 1
         }
-        curr_y += 1;
     }
 
     fields

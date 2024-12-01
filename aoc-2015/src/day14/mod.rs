@@ -17,7 +17,7 @@ fn read_input(filename: &str) -> HashMap<String, Reindeer> {
     let contents = utils::read_to_string_in_module!(filename);
     let re = Regex::new(r"(.+?)\s.*?\s(\d+)\skm/s\sfor\s(\d+)\s.+\s(\d+)").unwrap();
     for string in contents.split_terminator('\n') {
-        let cap = re.captures(&string).unwrap();
+        let cap = re.captures(string).unwrap();
         let name = String::from(&cap[1]);
         reindeers.insert(
             name.clone(),

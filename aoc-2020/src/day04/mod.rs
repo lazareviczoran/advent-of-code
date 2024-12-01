@@ -9,19 +9,22 @@ pub fn run() {
 
     println!(
         "part1 solution: {}",
-        validate_passports(&docs, &fields, &has_required_fields)
+        validate_passports(&docs, &fields, has_required_fields)
     );
     println!(
         "part2 solution: {}",
-        validate_passports(&docs, &fields, &validate_strict)
+        validate_passports(&docs, &fields, validate_strict)
     );
 }
 
-fn validate_passports(
+fn validate_passports<F>(
     passports: &[HashMap<String, String>],
     required: &HashSet<String>,
-    validation_fn: &dyn Fn(&HashMap<String, String>, &HashSet<String>) -> bool,
-) -> usize {
+    validation_fn: F,
+) -> usize
+where
+    F: Fn(&HashMap<String, String>, &HashSet<String>) -> bool,
+{
     passports
         .iter()
         .filter(|p| validation_fn(p, required))
@@ -130,20 +133,20 @@ mod tests {
     fn part1_test() {
         let docs = read("test-input.txt");
         let fields = required_keys();
-        assert_eq!(validate_passports(&docs, &fields, &has_required_fields), 2);
+        assert_eq!(validate_passports(&docs, &fields, has_required_fields), 2);
     }
 
     #[test]
     fn part2_invalid_test() {
         let docs = read("test-input-invalid.txt");
         let fields = required_keys();
-        assert_eq!(validate_passports(&docs, &fields, &validate_strict), 0);
+        assert_eq!(validate_passports(&docs, &fields, validate_strict), 0);
     }
 
     #[test]
     fn part2_valid_test() {
         let docs = read("test-input-valid.txt");
         let fields = required_keys();
-        assert_eq!(validate_passports(&docs, &fields, &validate_strict), 4);
+        assert_eq!(validate_passports(&docs, &fields, validate_strict), 4);
     }
 }

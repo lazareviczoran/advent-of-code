@@ -32,7 +32,7 @@ fn calculate_total2(json_value: &Value) -> i64 {
     let mut total = 0;
     if json_value.is_array() {
         for item in json_value.as_array().unwrap() {
-            total += calculate_total2(&item);
+            total += calculate_total2(item);
         }
     } else if json_value.is_object() {
         for (_key, val) in json_value.as_object().unwrap() {
@@ -54,7 +54,7 @@ fn calculate_total_without_red_rec(json_value: &Value) -> i64 {
     let mut total = 0;
     if json_value.is_array() {
         for item in json_value.as_array().unwrap() {
-            total += calculate_total_without_red_rec(&item);
+            total += calculate_total_without_red_rec(item);
         }
     } else if json_value.is_object() {
         let map = json_value.as_object().unwrap();

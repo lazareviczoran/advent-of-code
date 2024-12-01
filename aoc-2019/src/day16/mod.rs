@@ -34,26 +34,26 @@ pub fn run() {
 
 fn convert_offset(input: Vec<i32>) -> i32 {
     let mut offset = 0;
-    for i in 0..7 {
-        offset = offset * 10 + input[i];
+    for &val in input.iter().take(7) {
+        offset = offset * 10 + val;
     }
 
     offset
 }
 
-fn get_next_phase(input: Vec<i32>, base_pattern: &Vec<i32>) -> Vec<i32> {
+fn get_next_phase(input: Vec<i32>, base_pattern: &[i32]) -> Vec<i32> {
     let res = calculate_phase(input, base_pattern);
     convert_output(res)
 }
 
-fn calculate_phase(input: Vec<i32>, base_pattern: &Vec<i32>) -> Vec<i32> {
+fn calculate_phase(input: Vec<i32>, base_pattern: &[i32]) -> Vec<i32> {
     let mut res = Vec::new();
-    for i in 0..input.len() {
+    for (i, _) in input.iter().enumerate() {
         let mut val = 0;
-        for j in 0..input.len() {
-            let pattern_val = calculate_nth_pattern_value(&base_pattern, i as i32, j as i32);
+        for (j, row) in input.iter().enumerate() {
+            let pattern_val = calculate_nth_pattern_value(base_pattern, i as i32, j as i32);
             if pattern_val != 0 {
-                val += input[j] * pattern_val;
+                val += row * pattern_val;
             }
         }
         res.push(val);
@@ -62,12 +62,12 @@ fn calculate_phase(input: Vec<i32>, base_pattern: &Vec<i32>) -> Vec<i32> {
     res
 }
 
-fn calculate_phase2(input: &mut Vec<i32>, _base_pattern: &Vec<i32>) {
+fn calculate_phase2(input: &mut [i32], _base_pattern: &[i32]) {
     let size = input.len();
     let mut i = size - 2;
     let mut acc = input[size - 1];
     while i > size / 2 {
-        acc = acc + input[i];
+        acc += input[i];
         input[i] = acc % 10;
         i -= 1;
     }
@@ -82,7 +82,7 @@ fn convert_output(output: Vec<i32>) -> Vec<i32> {
     res
 }
 
-fn calculate_nth_pattern_value(base_pattern: &Vec<i32>, repeat_num: i32, n: i32) -> i32 {
+fn calculate_nth_pattern_value(base_pattern: &[i32], repeat_num: i32, n: i32) -> i32 {
     let length = base_pattern.len() as i32;
     let cycle = length + repeat_num * length;
 
@@ -100,29 +100,29 @@ mod test {
 
     #[test]
     fn calculate_pattern_test1() {
-        assert_eq!(calculate_nth_pattern_value(&vec![0, 1, 0, -1], 0, 5), 0);
-        assert_eq!(calculate_nth_pattern_value(&vec![0, 1, 0, -1], 0, 6), -1);
-        assert_eq!(calculate_nth_pattern_value(&vec![0, 1, 0, -1], 0, 7), 0);
+        assert_eq!(calculate_nth_pattern_value(&[0, 1, 0, -1], 0, 5), 0);
+        assert_eq!(calculate_nth_pattern_value(&[0, 1, 0, -1], 0, 6), -1);
+        assert_eq!(calculate_nth_pattern_value(&[0, 1, 0, -1], 0, 7), 0);
     }
 
     #[test]
     fn calculate_pattern_test2() {
-        assert_eq!(calculate_nth_pattern_value(&vec![0, 1, 0, -1], 3, 5), 1);
-        assert_eq!(calculate_nth_pattern_value(&vec![0, 1, 0, -1], 3, 6), 1);
-        assert_eq!(calculate_nth_pattern_value(&vec![0, 1, 0, -1], 3, 7), 0);
+        assert_eq!(calculate_nth_pattern_value(&[0, 1, 0, -1], 3, 5), 1);
+        assert_eq!(calculate_nth_pattern_value(&[0, 1, 0, -1], 3, 6), 1);
+        assert_eq!(calculate_nth_pattern_value(&[0, 1, 0, -1], 3, 7), 0);
     }
 
     #[test]
     fn calculate_pattern_test3() {
-        assert_eq!(calculate_nth_pattern_value(&vec![0, 1, 0, -1], 6, 5), 0);
-        assert_eq!(calculate_nth_pattern_value(&vec![0, 1, 0, -1], 6, 6), 1);
-        assert_eq!(calculate_nth_pattern_value(&vec![0, 1, 0, -1], 6, 7), 1);
+        assert_eq!(calculate_nth_pattern_value(&[0, 1, 0, -1], 6, 5), 0);
+        assert_eq!(calculate_nth_pattern_value(&[0, 1, 0, -1], 6, 6), 1);
+        assert_eq!(calculate_nth_pattern_value(&[0, 1, 0, -1], 6, 7), 1);
     }
 
     #[test]
     fn part1_sample_input1() {
         assert_eq!(
-            get_next_phase(vec![1, 2, 3, 4, 5, 6, 7, 8], &vec![0, 1, 0, -1]),
+            get_next_phase(vec![1, 2, 3, 4, 5, 6, 7, 8], &[0, 1, 0, -1]),
             [4, 8, 2, 2, 6, 1, 5, 8]
         );
     }
@@ -130,7 +130,7 @@ mod test {
     #[test]
     fn part1_sample_input2() {
         assert_eq!(
-            get_next_phase(vec![4, 8, 2, 2, 6, 1, 5, 8], &vec![0, 1, 0, -1]),
+            get_next_phase(vec![4, 8, 2, 2, 6, 1, 5, 8], &[0, 1, 0, -1]),
             [3, 4, 0, 4, 0, 4, 3, 8]
         );
     }
@@ -138,7 +138,7 @@ mod test {
     #[test]
     fn part1_sample_input3() {
         assert_eq!(
-            get_next_phase(vec![3, 4, 0, 4, 0, 4, 3, 8], &vec![0, 1, 0, -1]),
+            get_next_phase(vec![3, 4, 0, 4, 0, 4, 3, 8], &[0, 1, 0, -1]),
             [0, 3, 4, 1, 5, 5, 1, 8]
         );
     }
@@ -146,7 +146,7 @@ mod test {
     #[test]
     fn part1_sample_input4() {
         assert_eq!(
-            get_next_phase(vec![0, 3, 4, 1, 5, 5, 1, 8], &vec![0, 1, 0, -1]),
+            get_next_phase(vec![0, 3, 4, 1, 5, 5, 1, 8], &[0, 1, 0, -1]),
             [0, 1, 0, 2, 9, 4, 9, 8]
         );
     }
@@ -158,9 +158,9 @@ mod test {
             5, 9, 5,
         ];
         for _ in 0..100 {
-            res = get_next_phase(res, &vec![0, 1, 0, -1]);
+            res = get_next_phase(res, &[0, 1, 0, -1]);
         }
-        assert_eq!(res.starts_with(&[2, 4, 1, 7, 6, 1, 7, 6]), true);
+        assert!(res.starts_with(&[2, 4, 1, 7, 6, 1, 7, 6]));
     }
 
     #[test]
@@ -170,9 +170,9 @@ mod test {
             9, 1, 7,
         ];
         for _ in 0..100 {
-            res = get_next_phase(res, &vec![0, 1, 0, -1]);
+            res = get_next_phase(res, &[0, 1, 0, -1]);
         }
-        assert_eq!(res.starts_with(&[7, 3, 7, 4, 5, 4, 1, 8]), true);
+        assert!(res.starts_with(&[7, 3, 7, 4, 5, 4, 1, 8]));
     }
 
     #[test]
@@ -182,9 +182,9 @@ mod test {
             8, 7, 3,
         ];
         for _ in 0..100 {
-            res = get_next_phase(res, &vec![0, 1, 0, -1]);
+            res = get_next_phase(res, &[0, 1, 0, -1]);
         }
-        assert_eq!(res.starts_with(&[5, 2, 4, 3, 2, 1, 3, 3]), true);
+        assert!(res.starts_with(&[5, 2, 4, 3, 2, 1, 3, 3]));
     }
 
     #[test]
@@ -199,7 +199,7 @@ mod test {
         let mut res = real_signal_input.clone();
         let offset = convert_offset(res.clone());
         for _ in 0..100 {
-            calculate_phase2(&mut res, &vec![0, 1, 0, -1]);
+            calculate_phase2(&mut res, &[0, 1, 0, -1]);
         }
         let (_, rest) = res.split_at(offset as usize);
         let (result, _) = rest.split_at(8);
@@ -218,7 +218,7 @@ mod test {
         let mut res = real_signal_input.clone();
         let offset = convert_offset(res.clone());
         for _ in 0..100 {
-            calculate_phase2(&mut res, &vec![0, 1, 0, -1]);
+            calculate_phase2(&mut res, &[0, 1, 0, -1]);
         }
         let (_, rest) = res.split_at(offset as usize);
         let (result, _) = rest.split_at(8);
@@ -237,7 +237,7 @@ mod test {
         let mut res = real_signal_input.clone();
         let offset = convert_offset(res.clone());
         for _ in 0..100 {
-            calculate_phase2(&mut res, &vec![0, 1, 0, -1]);
+            calculate_phase2(&mut res, &[0, 1, 0, -1]);
         }
         let (_, rest) = res.split_at(offset as usize);
         let (result, _) = rest.split_at(8);

@@ -6,7 +6,7 @@ pub fn run() {
     let values = read_input("input.txt");
     println!(
         "Day 1: Chronal Calibration part1 solution\n {}",
-        values.iter().fold(0, |acc, val| acc + val)
+        values.iter().sum::<i32>()
     );
 
     println!(
@@ -22,7 +22,7 @@ fn find_first_repeated_frequency(values: &Vec<i32>) -> i32 {
     loop {
         for val in values {
             curr_freq += val;
-            if let Some(_) = frequencies.get(&curr_freq) {
+            if frequencies.contains(&curr_freq) {
                 return curr_freq;
             } else {
                 frequencies.insert(curr_freq);

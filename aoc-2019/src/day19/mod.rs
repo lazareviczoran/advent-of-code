@@ -3,12 +3,13 @@ use std::collections::HashMap;
 use utils::read_to_string_in_module;
 
 pub fn run() {
-    let mut i = 0;
     let mut memory_map: HashMap<i64, i64> = HashMap::new();
-    for v in read_to_string_in_module!("input.txt").split_terminator(',') {
+    for (i, v) in read_to_string_in_module!("input.txt")
+        .split_terminator(',')
+        .enumerate()
+    {
         let val = v.parse::<i64>().unwrap();
-        memory_map.insert(i, val);
-        i += 1;
+        memory_map.insert(i as i64, val);
     }
 
     let (output, affected_points_count) = calculate_tractor_beam_output(memory_map.clone());
@@ -39,24 +40,24 @@ fn find_first_100x100_fit(memory: HashMap<i64, i64>) -> i64 {
 }
 
 fn can_fit_100x100(memory: HashMap<i64, i64>, x: i64, y: i64) -> (bool, i64, i64) {
-    let (output, _, _, _, _) = compute(&mut memory.clone(), &mut vec![x + 99, y], 0, 0, 0);
+    let (output, _, _, _, _) = compute(&mut memory.clone(), &[x + 99, y], 0, 0, 0);
     if output[0] == 0 {
-        let (output, _, _, _, _) = compute(&mut memory.clone(), &mut vec![x, y + 1], 0, 0, 0);
+        let (output, _, _, _, _) = compute(&mut memory.clone(), &[x, y + 1], 0, 0, 0);
         if output[0] == 1 {
             return (false, x, y + 1);
         }
         return (false, x + 1, y + 1);
     }
 
-    let (output, _, _, _, _) = compute(&mut memory.clone(), &mut vec![x, y + 99], 0, 0, 0);
+    let (output, _, _, _, _) = compute(&mut memory.clone(), &[x, y + 99], 0, 0, 0);
     if output[0] == 0 {
-        let (output, _, _, _, _) = compute(&mut memory.clone(), &mut vec![x + 1, y], 0, 0, 0);
+        let (output, _, _, _, _) = compute(&mut memory.clone(), &[x + 1, y], 0, 0, 0);
         if output[0] == 1 {
             return (false, x + 1, y);
         }
         return (false, x + 1, y + 1);
     }
-    return (true, x, y);
+    (true, x, y)
 }
 
 fn calculate_tractor_beam_output(memory: HashMap<i64, i64>) -> (Vec<Vec<char>>, i64) {
@@ -64,7 +65,7 @@ fn calculate_tractor_beam_output(memory: HashMap<i64, i64>) -> (Vec<Vec<char>>, 
     let mut affected_points_count = 0;
     for j in 0..50 {
         for i in 0..50 {
-            let (output, _, _, _, _) = compute(&mut memory.clone(), &mut vec![i, j], 0, 0, 0);
+            let (output, _, _, _, _) = compute(&mut memory.clone(), &[i, j], 0, 0, 0);
             let output_char = match output[0] {
                 0 => '.',
                 1 => {
@@ -86,8 +87,8 @@ fn print_output(output: Vec<Vec<char>>) {
     let w = output.len();
 
     for j in 0..h {
-        for i in 0..w {
-            sb.push(output[i][j]);
+        for row in output.iter().take(w) {
+            sb.push(row[j]);
         }
         sb.push('\n');
     }
@@ -96,7 +97,7 @@ fn print_output(output: Vec<Vec<char>>) {
 
 fn compute(
     memory: &mut HashMap<i64, i64>,
-    input: &Vec<i64>,
+    input: &[i64],
     op_position: i64,
     rel_position: i64,
     input_position: usize,
@@ -134,7 +135,7 @@ fn compute(
                     return (output, op_pos, rel_base, input_pos, operation_code);
                 }
                 memory.insert(write_address, input[input_pos]);
-                input_pos = input_pos + 1;
+                input_pos += 1;
                 move_by = 2;
             }
             4 => {
@@ -187,18 +188,18 @@ fn compute(
             }
             _ => panic!("Something went wrong: {}", op_code),
         }
-        op_pos = op_pos + move_by;
+        op_pos += move_by;
     }
-    (output, -1, -1, usize::max_value(), operation_code)
+    (output, -1, -1, usize::MAX, operation_code)
 }
 
 fn get_value(memory: &mut HashMap<i64, i64>, key: i64) -> i64 {
     if let Some(value) = memory.get(&key) {
-        return *value;
+        *value
     } else {
         let value = 0;
         memory.insert(key, value);
-        return value;
+        value
     }
 }
 
@@ -209,8 +210,8 @@ fn get_argument_values(
     param_modes: Vec<i64>,
 ) -> Vec<i64> {
     let mut args = Vec::new();
-    for i in 0..param_modes.len() {
-        match param_modes[i] {
+    for (i, &mode) in param_modes.iter().enumerate() {
+        match mode {
             0 => {
                 let pos = get_value(memory, op_position + (i as i64) + 1);
                 args.push(get_value(memory, pos));
@@ -235,17 +236,15 @@ fn get_write_address(
     rel_position: i64,
     param_mode: i64,
 ) -> i64 {
-    let addr;
     let mut offset = 3;
     if op_code == 3 {
         offset = 1;
     }
     match param_mode {
-        0 => addr = get_value(memory, op_position + offset),
-        2 => addr = rel_position + get_value(memory, op_position + offset),
+        0 => get_value(memory, op_position + offset),
+        2 => rel_position + get_value(memory, op_position + offset),
         _ => panic!("Unexpected param mode"),
     }
-    addr
 }
 
 fn extract_op_code_and_param_modes(memory: &mut HashMap<i64, i64>, pos: i64) -> (i64, Vec<i64>) {
@@ -253,14 +252,13 @@ fn extract_op_code_and_param_modes(memory: &mut HashMap<i64, i64>, pos: i64) -> 
     let op_code = val % 100;
     let mut modes = Vec::new();
     let mut modes_digits = val / 100;
-    let param_num;
-    match op_code {
-        1 | 2 | 7 | 8 => param_num = 3,
-        5 | 6 => param_num = 2,
-        3 | 4 | 9 => param_num = 1,
-        99 => param_num = 0,
+    let param_num = match op_code {
+        1 | 2 | 7 | 8 => 3,
+        5 | 6 => 2,
+        3 | 4 | 9 => 1,
+        99 => 0,
         _ => panic!("Invalid op code {}", op_code),
-    }
+    };
     for _ in 0..param_num {
         modes.push(modes_digits % 10);
         modes_digits /= 10;

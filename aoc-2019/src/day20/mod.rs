@@ -42,7 +42,7 @@ pub fn run() {
 }
 
 fn find_shortest_path(
-    map: &Vec<Vec<char>>,
+    map: &[Vec<char>],
     portals_by_pos: &HashMap<Position, String>,
     portals_by_name: &HashMap<String, Vec<Position>>,
 ) -> i64 {
@@ -52,7 +52,7 @@ fn find_shortest_path(
     while !queue.is_empty() {
         let (position, visited, steps) = queue.remove(0);
         let mut new_visited = visited.clone();
-        if new_visited.get(&position).is_some() {
+        if new_visited.contains(&position) {
             continue;
         }
         new_visited.insert(position.clone());
@@ -78,7 +78,7 @@ fn find_shortest_path(
 }
 
 fn find_shortest_path_with_levels(
-    map: &Vec<Vec<char>>,
+    map: &[Vec<char>],
     portals_by_pos: &HashMap<Position, String>,
     portals_by_name: &HashMap<String, Vec<Position>>,
 ) -> i64 {
@@ -89,7 +89,7 @@ fn find_shortest_path_with_levels(
     while !queue.is_empty() {
         let (position, steps, level) = queue.remove(0);
 
-        if seen.get(&(position.clone(), level)).is_some() {
+        if seen.contains(&(position.clone(), level)) {
             continue;
         }
         seen.insert((position.clone(), level));
@@ -117,7 +117,7 @@ fn find_shortest_path_with_levels(
 }
 
 fn get_available_next_positions_with_levels(
-    map: &Vec<Vec<char>>,
+    map: &[Vec<char>],
     portals_by_pos: &HashMap<Position, String>,
     portals_by_name: &HashMap<String, Vec<Position>>,
     visited: &HashSet<(Position, i64)>,
@@ -142,10 +142,10 @@ fn get_available_next_positions_with_levels(
                 next_pos.y += 1;
             }
         }
-        let next_val = get_value(&map, &next_pos);
+        let next_val = get_value(map, &next_pos);
         if next_val != '#' {
             if next_val.is_ascii_uppercase() {
-                let portal = portals_by_pos.get(&curr_pos).unwrap();
+                let portal = portals_by_pos.get(curr_pos).unwrap();
                 if portal == "AA" || portal == "ZZ" {
                     next_pos = curr_pos.clone();
                 } else {
@@ -182,7 +182,7 @@ fn get_available_next_positions_with_levels(
 }
 
 fn get_available_next_positions(
-    map: &Vec<Vec<char>>,
+    map: &[Vec<char>],
     portals_by_pos: &HashMap<Position, String>,
     portals_by_name: &HashMap<String, Vec<Position>>,
     visited: HashSet<Position>,
@@ -205,10 +205,10 @@ fn get_available_next_positions(
                 next_pos.y += 1;
             }
         }
-        let next_val = get_value(&map, &next_pos);
+        let next_val = get_value(map, &next_pos);
         if next_val != '#' {
             if next_val.is_ascii_uppercase() {
-                let portal = portals_by_pos.get(&curr_pos).unwrap();
+                let portal = portals_by_pos.get(curr_pos).unwrap();
                 if portal == "AA" || portal == "ZZ" {
                     next_pos = curr_pos.clone();
                 } else {
@@ -222,7 +222,7 @@ fn get_available_next_positions(
                     }
                 }
             }
-            if visited.get(&next_pos).is_none() {
+            if !visited.contains(&next_pos) {
                 next_positions.push(next_pos);
             }
         }
@@ -231,23 +231,22 @@ fn get_available_next_positions(
     next_positions
 }
 
-fn get_value(map: &Vec<Vec<char>>, curr_pos: &Position) -> char {
+fn get_value(map: &[Vec<char>], curr_pos: &Position) -> char {
     map[curr_pos.x as usize][curr_pos.y as usize]
 }
 
-fn load_map(
-    filename: String,
-) -> (
+type MapInfo = (
     Vec<Vec<char>>,
     HashMap<Position, String>,
     HashMap<String, Vec<Position>>,
-) {
+);
+
+fn load_map(filename: String) -> MapInfo {
     let map: Vec<Vec<char>> = read_to_string_in_module!(filename)
         .split_terminator('\n')
         .map(|r| {
-            let mut chars = r.chars();
             let mut row = Vec::new();
-            while let Some(ch) = chars.next() {
+            for ch in r.chars() {
                 row.push(ch);
             }
             row
@@ -260,10 +259,10 @@ fn load_map(
     let width = map[0].len();
     let height = map.len();
     let mut res = vec![vec![' '; height]; width];
-    for i in 0..width {
+    for (i, row) in res.iter_mut().enumerate().take(width) {
         for j in 0..height {
             let curr = map[j][i];
-            res[i][j] = curr;
+            row[j] = curr;
             if i != 0 && i != width - 1 && j != 0 && j != height - 1 && curr.is_ascii_uppercase() {
                 let mut portal = String::new();
                 let mut position = Position::new(0, 0);
@@ -301,12 +300,11 @@ fn load_map(
 
 fn print_map(map: Vec<Vec<char>>) {
     // print!("{}[2J", 27 as char);
-    let w = map.len();
     let h = map[0].len();
     let mut sb = String::new();
     for j in 0..h {
-        for i in 0..w {
-            sb.push(map[i][j]);
+        for row in map.iter() {
+            sb.push(row[j]);
         }
         sb.push('\n');
     }
@@ -314,17 +312,17 @@ fn print_map(map: Vec<Vec<char>>) {
 }
 
 #[allow(unused)]
-fn print_map_status(map: &Vec<Vec<char>>, position: &Position) {
+fn print_map_status(map: &[Vec<char>], position: &Position) {
     print!("{}[2J", 27 as char);
     let w = map.len();
     let h = map[0].len();
     let mut sb = String::new();
     for j in 0..h {
-        for i in 0..w {
+        for (i, row) in map.iter().enumerate().take(w) {
             if position.x == i as i64 && position.y == j as i64 {
                 sb.push(' ');
             } else {
-                sb.push(map[i][j]);
+                sb.push(row[j]);
             }
         }
         sb.push('\n');

@@ -14,7 +14,7 @@ pub fn run() {
             .iter()
             .map(|map| {
                 let mut entries = map.iter().collect::<Vec<_>>();
-                entries.sort_by(|a, b| b.1.cmp(&a.1));
+                entries.sort_by(|a, b| b.1.cmp(a.1));
                 *entries[0].0
             })
             .collect::<String>()
@@ -25,7 +25,7 @@ pub fn run() {
             .iter()
             .map(|map| {
                 let mut entries = map.iter().collect::<Vec<_>>();
-                entries.sort_by(|a, b| a.1.cmp(&b.1));
+                entries.sort_by(|a, b| a.1.cmp(b.1));
                 *entries[0].0
             })
             .collect::<String>()

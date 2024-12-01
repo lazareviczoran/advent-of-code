@@ -20,7 +20,7 @@ pub fn run() {
     );
 }
 
-fn compute_max_thruster_signal(memory: &mut Vec<i32>) -> i32 {
+fn compute_max_thruster_signal(memory: &mut [i32]) -> i32 {
     let mut max_thruster_signal = 0;
     // generating permutations using heaps algorithm
     let mut permutations: Vec<Vec<i32>> = Vec::new();
@@ -28,27 +28,27 @@ fn compute_max_thruster_signal(memory: &mut Vec<i32>) -> i32 {
     calculate_permutations(&mut permutations, &mut sequence_items, 5);
 
     for perm in permutations {
-        let (amplifier_a_output, _, _) = compute(&mut memory.clone(), vec![perm[0], 0], 0, 0);
+        let (amplifier_a_output, _, _) = compute(&mut memory.to_vec(), vec![perm[0], 0], 0, 0);
         let (amplifier_b_output, _, _) = compute(
-            &mut memory.clone(),
+            &mut memory.to_vec(),
             vec![perm[1], amplifier_a_output[0]],
             0,
             0,
         );
         let (amplifier_c_output, _, _) = compute(
-            &mut memory.clone(),
+            &mut memory.to_vec(),
             vec![perm[2], amplifier_b_output[0]],
             0,
             0,
         );
         let (amplifier_d_output, _, _) = compute(
-            &mut memory.clone(),
+            &mut memory.to_vec(),
             vec![perm[3], amplifier_c_output[0]],
             0,
             0,
         );
         let (amplifier_e_output, _, _) = compute(
-            &mut memory.clone(),
+            &mut memory.to_vec(),
             vec![perm[4], amplifier_d_output[0]],
             0,
             0,
@@ -61,7 +61,7 @@ fn compute_max_thruster_signal(memory: &mut Vec<i32>) -> i32 {
     max_thruster_signal
 }
 
-fn compute_max_thruster_signal_with_feedback_loop(memory: &mut Vec<i32>) -> i32 {
+fn compute_max_thruster_signal_with_feedback_loop(memory: &mut [i32]) -> i32 {
     let mut max_thruster_signal = 0;
     let mut permutations: Vec<Vec<i32>> = Vec::new();
     let mut sequence_items = vec![5, 6, 7, 8, 9];
@@ -79,12 +79,12 @@ fn compute_max_thruster_signal_with_feedback_loop(memory: &mut Vec<i32>) -> i32 
         amplifier_op_positions = vec![0; 5];
         amplifier_outputs = vec![vec![]; 5];
         amplifier_inputs = vec![vec![]; 5];
-        amplifier_programs = vec![memory.clone(); 5];
+        amplifier_programs = vec![memory.to_vec(); 5];
         for i in 0..5 {
             amplifier_inputs[i].push(perm[i]);
         }
         amplifier_inputs[0].push(0);
-        while amplifier_input_positions[4] != usize::max_value() {
+        while amplifier_input_positions[4] != usize::MAX {
             prev_amplifier = (curr_amplifier + 4) % 5;
             amplifier_inputs[curr_amplifier].append(&mut amplifier_outputs[prev_amplifier]);
             let (new_output, new_op_position, new_input_position) = compute(
@@ -127,14 +127,12 @@ fn calculate_permutations(result: &mut Vec<Vec<i32>>, sequence: &mut Vec<i32>, n
     calculate_permutations(result, sequence, n - 1);
 }
 
-fn swap(sequence: &mut Vec<i32>, from: i32, to: i32) {
-    let temp = sequence[from as usize];
-    sequence[from as usize] = sequence[to as usize];
-    sequence[to as usize] = temp;
+fn swap(sequence: &mut [i32], from: i32, to: i32) {
+    sequence.swap(from as usize, to as usize);
 }
 
 fn compute(
-    memory: &mut Vec<i32>,
+    memory: &mut [i32],
     input: Vec<i32>,
     op_position: usize,
     input_position: usize,
@@ -166,7 +164,7 @@ fn compute(
                     return (output, op_pos, input_pos);
                 }
                 memory[store_index] = input[input_pos];
-                input_pos = input_pos + 1;
+                input_pos += 1;
                 move_by = 2;
             }
             4 => {
@@ -212,9 +210,9 @@ fn compute(
             }
             _ => panic!("Something went wrong"),
         }
-        op_pos = op_pos + move_by;
+        op_pos += move_by;
     }
-    (output, usize::max_value(), usize::max_value())
+    (output, usize::MAX, usize::MAX)
 }
 
 fn get_argument_values(memory: Vec<i32>, op_position: usize, param_modes: Vec<i32>) -> Vec<i32> {
@@ -247,8 +245,8 @@ fn extract_op_code_and_param_modes(memory: Vec<i32>, pos: usize) -> (i32, Vec<i3
     let mut i = 0;
     while modes_digits > 0 {
         modes[i] = modes_digits % 10;
-        modes_digits = modes_digits / 10;
-        i = i + 1;
+        modes_digits /= 10;
+        i += 1;
     }
     (op_code, modes)
 }
@@ -261,7 +259,7 @@ mod test {
     #[test]
     fn part1_sample_input1() {
         assert_eq!(
-            compute_max_thruster_signal(&mut vec![
+            compute_max_thruster_signal(&mut [
                 3, 15, 3, 16, 1002, 16, 10, 16, 1, 16, 15, 15, 4, 15, 99, 0, 0
             ]),
             43210
@@ -271,7 +269,7 @@ mod test {
     #[test]
     fn part1_sample_input2() {
         assert_eq!(
-            compute_max_thruster_signal(&mut vec![
+            compute_max_thruster_signal(&mut [
                 3, 23, 3, 24, 1002, 24, 10, 24, 1002, 23, -1, 23, 101, 5, 23, 23, 1, 24, 23, 23, 4,
                 23, 99, 0, 0
             ]),
@@ -282,7 +280,7 @@ mod test {
     #[test]
     fn part1_sample_input3() {
         assert_eq!(
-            compute_max_thruster_signal(&mut vec![
+            compute_max_thruster_signal(&mut [
                 3, 31, 3, 32, 1002, 32, 10, 32, 1001, 31, -2, 31, 1007, 31, 0, 33, 1002, 33, 7, 33,
                 1, 33, 31, 31, 1, 32, 31, 31, 4, 31, 99, 0, 0, 0
             ]),
@@ -293,7 +291,7 @@ mod test {
     #[test]
     fn part2_sample_input1() {
         assert_eq!(
-            compute_max_thruster_signal_with_feedback_loop(&mut vec![
+            compute_max_thruster_signal_with_feedback_loop(&mut [
                 3, 26, 1001, 26, -4, 26, 3, 27, 1002, 27, 2, 27, 1, 27, 26, 27, 4, 27, 1001, 28,
                 -1, 28, 1005, 28, 6, 99, 0, 0, 5
             ]),
@@ -304,7 +302,7 @@ mod test {
     #[test]
     fn part2_sample_input2() {
         assert_eq!(
-            compute_max_thruster_signal_with_feedback_loop(&mut vec![
+            compute_max_thruster_signal_with_feedback_loop(&mut [
                 3, 52, 1001, 52, -5, 52, 3, 53, 1, 52, 56, 54, 1007, 54, 5, 55, 1005, 55, 26, 1001,
                 54, -5, 54, 1105, 1, 12, 1, 53, 54, 53, 1008, 54, 0, 55, 1001, 55, 1, 55, 2, 53,
                 55, 53, 4, 53, 1001, 56, -1, 56, 1005, 56, 6, 99, 0, 0, 0, 0, 10

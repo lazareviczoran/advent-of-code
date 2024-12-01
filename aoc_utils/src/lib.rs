@@ -41,7 +41,7 @@ fn infer_scale_to_output(
         _ => None,
     };
     scale_to_change
-        .and_then(|new_scale| Some(infer_scale_to_output(elapsed, new_scale, skip_infer)))
+        .map(|new_scale| infer_scale_to_output(elapsed, new_scale, skip_infer))
         .unwrap_or_else(|| {
             (
                 current.value(elapsed).to_string(),

@@ -38,10 +38,10 @@ fn find_area_of_region_containing_all(
     let mut fields = vec![vec![0; height + 1]; width + 1];
     let mut region_area = 0;
     for y in 0..=height {
-        for x in 0..=width {
+        for (x, row) in fields.iter_mut().enumerate().take(width + 1) {
             let curr_pos = Position::new(0, x as i32, y as i32);
             if is_distance_to_all_bellow_limit(positions, curr_pos, total_dist_limit) {
-                fields[x][y] = 1;
+                row[y] = 1;
                 region_area += 1;
             }
         }
@@ -76,21 +76,21 @@ fn find_largest_finite_area(positions: &Vec<Position>, bottom_right_pos: Positio
     let mut infinite_area_points = HashSet::new();
     let mut point_areas = HashMap::new();
     for y in 0..=height {
-        for x in 0..=width {
+        for (x, row) in fields.iter_mut().enumerate().take(width + 1) {
             let curr_pos = Position::new(0, x as i32, y as i32);
             let closest_points = find_closest_points(positions, curr_pos);
             if closest_points.len() == 1 {
                 // if there is only one closest point, set its order number as field
                 // value, otherwise leave it with value 0
-                fields[x][y] = closest_points[0].id;
+                row[y] = closest_points[0].id;
             }
             if x == 0 || x == width || y == 0 || y == height {
-                infinite_area_points.insert(fields[x][y]);
+                infinite_area_points.insert(row[y]);
             }
-            if let Some(area) = point_areas.get_mut(&fields[x][y]) {
+            if let Some(area) = point_areas.get_mut(&row[y]) {
                 *area += 1;
             } else {
-                point_areas.insert(fields[x][y], 1);
+                point_areas.insert(row[y], 1);
             }
         }
     }
@@ -110,15 +110,19 @@ fn find_largest_finite_area(positions: &Vec<Position>, bottom_right_pos: Positio
 
 fn find_closest_points(positions: &Vec<Position>, curr_pos: Position) -> Vec<Position> {
     let mut closest_points = vec![];
-    let mut smallest_dist = i32::max_value();
+    let mut smallest_dist = i32::MAX;
 
     for p in positions {
         let distance = (curr_pos.x - p.x).abs() + (curr_pos.y - p.y).abs();
-        if distance < smallest_dist {
-            smallest_dist = distance;
-            closest_points = vec![*p];
-        } else if distance == smallest_dist {
-            closest_points.push(*p);
+        match distance.cmp(&smallest_dist) {
+            std::cmp::Ordering::Less => {
+                smallest_dist = distance;
+                closest_points = vec![*p];
+            }
+            std::cmp::Ordering::Equal => {
+                closest_points.push(*p);
+            }
+            std::cmp::Ordering::Greater => {}
         }
     }
     closest_points
@@ -128,8 +132,8 @@ fn find_closest_points(positions: &Vec<Position>, curr_pos: Position) -> Vec<Pos
 fn print_fields(fields: &Vec<Vec<i32>>) {
     let mut output = String::new();
     for y in 0..fields[0].len() {
-        for x in 0..fields.len() {
-            output.push((64 + &fields[x][y]) as u8 as char);
+        for row in fields {
+            output.push((64 + &row[y]) as u8 as char);
         }
         output.push('\n');
     }

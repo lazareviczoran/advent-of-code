@@ -132,8 +132,7 @@ impl Computer {
                 }
                 Instruction::TransmitReg(register) => {
                     let val = *self.registers.get(&register).unwrap();
-                    if (val != 1 && val != 0)
-                        || self.signal.is_empty() && val != 0
+                    if (self.signal.is_empty() || val != 1) && val != 0
                         || !self.signal.is_empty() && self.signal[self.signal.len() - 1] == val
                     {
                         return;
@@ -141,8 +140,7 @@ impl Computer {
                     self.signal.push(*self.registers.get(&register).unwrap());
                 }
                 Instruction::TransmitVal(val) => {
-                    if (val != 1 && val != 0)
-                        || self.signal.is_empty() && val != 0
+                    if (self.signal.is_empty() || val != 1) && val != 0
                         || !self.signal.is_empty() && self.signal[self.signal.len() - 1] == val
                     {
                         return;

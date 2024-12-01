@@ -24,7 +24,7 @@ fn is_nice(string: &str) -> bool {
             let mut adjs_string = String::new();
             adjs_string.push(ch);
             adjs_string.push(*next);
-            if "ab,cd,pq,xy".contains(&adjs_string.as_str()) {
+            if "ab,cd,pq,xy".contains(adjs_string.as_str()) {
                 has_disallowed_adjs = true;
             }
         }
@@ -50,10 +50,8 @@ fn is_nice_v2(string: &str) -> bool {
                     has_repeated_pair = true;
                 }
             }
-            if !has_mirrored_seq && prev.is_some() {
-                if prev.unwrap() == *next_ch {
-                    has_mirrored_seq = true;
-                }
+            if !has_mirrored_seq && prev.is_some() && prev.unwrap() == *next_ch {
+                has_mirrored_seq = true;
             }
         }
         prev = Some(ch);

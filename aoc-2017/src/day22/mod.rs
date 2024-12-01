@@ -25,13 +25,12 @@ impl Virus {
             map: map
                 .iter()
                 .enumerate()
-                .map(|(y, row)| {
+                .flat_map(|(y, row)| {
                     row.iter()
                         .enumerate()
                         .map(|(x, &ch)| ((x as i64, y as i64), ch))
                         .collect::<Vec<_>>()
                 })
-                .flatten()
                 .collect(),
             infection_bursts_count: 0,
         }

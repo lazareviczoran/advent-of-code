@@ -33,10 +33,7 @@ fn is_tls(ip: &[Vec<char>]) -> bool {
         .skip(1)
         .step_by(2)
         .all(|seg| seg.windows(4).all(|w| !is_abba(w)))
-        && ip
-            .iter()
-            .step_by(2)
-            .any(|seg| seg.windows(4).any(|w| is_abba(w)))
+        && ip.iter().step_by(2).any(|seg| seg.windows(4).any(is_abba))
 }
 
 fn is_abba(segment: &[char]) -> bool {
@@ -46,11 +43,7 @@ fn is_abba(segment: &[char]) -> bool {
 fn read(filename: &str) -> Vec<Vec<Vec<char>>> {
     utils::read_to_string_in_module!(filename)
         .split_terminator('\n')
-        .map(|s| {
-            s.split(|c| c == '[' || c == ']')
-                .map(|s| s.chars().collect())
-                .collect()
-        })
+        .map(|s| s.split(&['[', ']']).map(|s| s.chars().collect()).collect())
         .collect()
 }
 

@@ -23,7 +23,7 @@ pub fn run() {
 
 fn find_correct_aunt(
     aunts: &HashMap<i32, HashMap<String, i32>>,
-    match_values: &Vec<(&str, i32)>,
+    match_values: &[(&str, i32)],
 ) -> i32 {
     for (aunt, attrs) in aunts.iter() {
         let mut is_match = true;
@@ -40,12 +40,12 @@ fn find_correct_aunt(
         }
     }
     // no matching aunt found
-    return -1;
+    -1
 }
 
 fn find_correct_aunt_v2(
     aunts: &HashMap<i32, HashMap<String, i32>>,
-    match_values: &Vec<(&str, i32)>,
+    match_values: &[(&str, i32)],
 ) -> i32 {
     for (aunt, attrs) in aunts.iter() {
         let mut is_match = true;
@@ -66,7 +66,7 @@ fn find_correct_aunt_v2(
         }
     }
     // no matching aunt found
-    return -1;
+    -1
 }
 
 fn read_input(filename: &str) -> HashMap<i32, HashMap<String, i32>> {
@@ -75,7 +75,7 @@ fn read_input(filename: &str) -> HashMap<i32, HashMap<String, i32>> {
     let re = Regex::new(r"(\d+?):(.*)").unwrap();
     let attr_re = Regex::new(r"\s(.+?):\s(\d+)").unwrap();
     for string in contents.split_terminator('\n') {
-        let captures = re.captures(&string).unwrap();
+        let captures = re.captures(string).unwrap();
         let aunt = &captures[1].parse::<i32>().unwrap();
         let mut aunt_attrs = HashMap::new();
         for cap in attr_re.captures_iter(&captures[2]) {

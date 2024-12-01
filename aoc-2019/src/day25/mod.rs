@@ -138,13 +138,11 @@ fn explore_and_take_items(
                 if opposite_move != next_move_str {
                     next_moves.push(next_move_str);
                 }
-            } else {
-                if is_takeable_item(next_move_str.clone()) {
-                    items.push(next_move_str.clone());
-                    let mut take_cmd = String::from("take ");
-                    take_cmd.push_str(&next_move_str);
-                    run_command(memory, op_pos, rel_pos, input_pos, input, &take_cmd);
-                }
+            } else if is_takeable_item(next_move_str.clone()) {
+                items.push(next_move_str.clone());
+                let mut take_cmd = String::from("take ");
+                take_cmd.push_str(&next_move_str);
+                run_command(memory, op_pos, rel_pos, input_pos, input, &take_cmd);
             }
         }
         stack.push(opposite_move.clone());

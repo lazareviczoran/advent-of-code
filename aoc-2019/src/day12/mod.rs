@@ -43,14 +43,9 @@ pub fn run() {
     println!("The N-Body Problem part2 Solution: {:?}", total_steps);
 }
 
-fn calculate_steps_to_repeating(
-    positions: &mut Vec<Position>,
-    velocities: &mut Vec<Position>,
-) -> i128 {
+fn calculate_steps_to_repeating(positions: &mut [Position], velocities: &mut [Position]) -> i128 {
     let (cycle_x, cycle_y, cycle_z) = find_cycles(positions, velocities);
-    let i = lcm(cycle_x as i128, lcm(cycle_y as i128, cycle_z as i128));
-
-    i
+    lcm(cycle_x as i128, lcm(cycle_y as i128, cycle_z as i128))
 }
 
 fn lcm(a: i128, b: i128) -> i128 {
@@ -68,9 +63,9 @@ fn gcd(mut a: i128, mut b: i128) -> i128 {
     a
 }
 
-fn find_cycles(positions: &mut Vec<Position>, velocities: &mut Vec<Position>) -> (i32, i32, i32) {
-    let initial_positions = positions.clone();
-    let initial_velocities = velocities.clone();
+fn find_cycles(positions: &mut [Position], velocities: &mut [Position]) -> (i32, i32, i32) {
+    let initial_positions = positions.to_vec();
+    let initial_velocities = velocities.to_vec();
     let mut cycle_x = 0;
     let mut cycle_y = 0;
     let mut cycle_z = 0;
@@ -110,8 +105,8 @@ fn find_cycles(positions: &mut Vec<Position>, velocities: &mut Vec<Position>) ->
 }
 
 fn calculate_total_energy(
-    positions: &mut Vec<Position>,
-    velocities: &mut Vec<Position>,
+    positions: &mut [Position],
+    velocities: &mut [Position],
     steps: usize,
 ) -> i32 {
     let mut total_energy = 0;
@@ -135,7 +130,7 @@ fn calculate_total_energy(
     total_energy
 }
 
-fn move_moons(positions: &mut Vec<Position>, velocities: &mut Vec<Position>) {
+fn move_moons(positions: &mut [Position], velocities: &mut [Position]) {
     apply_gravity(positions, velocities);
     for i in 0..positions.len() {
         positions[i].x += velocities[i].x;
@@ -144,24 +139,24 @@ fn move_moons(positions: &mut Vec<Position>, velocities: &mut Vec<Position>) {
     }
 }
 
-fn apply_gravity(positions: &mut Vec<Position>, velocities: &mut Vec<Position>) {
+fn apply_gravity(positions: &mut [Position], velocities: &mut [Position]) {
     for i in 0..positions.len() {
         for j in 0..positions.len() {
             if i != j {
-                if positions[i].x > positions[j].x {
-                    velocities[i].x -= 1;
-                } else if positions[i].x < positions[j].x {
-                    velocities[i].x += 1;
+                match positions[i].x.cmp(&positions[j].x) {
+                    std::cmp::Ordering::Less => velocities[i].x += 1,
+                    std::cmp::Ordering::Equal => {}
+                    std::cmp::Ordering::Greater => velocities[i].x -= 1,
                 }
-                if positions[i].y > positions[j].y {
-                    velocities[i].y -= 1;
-                } else if positions[i].y < positions[j].y {
-                    velocities[i].y += 1;
+                match positions[i].y.cmp(&positions[j].y) {
+                    std::cmp::Ordering::Less => velocities[i].y += 1,
+                    std::cmp::Ordering::Equal => {}
+                    std::cmp::Ordering::Greater => velocities[i].y -= 1,
                 }
-                if positions[i].z > positions[j].z {
-                    velocities[i].z -= 1;
-                } else if positions[i].z < positions[j].z {
-                    velocities[i].z += 1;
+                match positions[i].z.cmp(&positions[j].z) {
+                    std::cmp::Ordering::Less => velocities[i].z += 1,
+                    std::cmp::Ordering::Equal => {}
+                    std::cmp::Ordering::Greater => velocities[i].z -= 1,
                 }
             }
         }

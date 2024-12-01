@@ -15,7 +15,7 @@ pub fn run() {
 
 fn find_minimum_container_combinations(containers: &Vec<usize>, target_value: usize) -> usize {
     let combinations = find_all_container_combinations(containers, &vec![], 0, target_value);
-    let mut min_combination_size = usize::max_value();
+    let mut min_combination_size = usize::MAX;
     let mut combinations_lenghts = HashMap::new();
     for c in combinations {
         if c.len() < min_combination_size {
@@ -34,7 +34,7 @@ fn find_all_container_combinations(
     current_el_index: usize,
     target_value: usize,
 ) -> Vec<Vec<usize>> {
-    let current_sum = current_set.iter().fold(0, |acc, x| acc + x);
+    let current_sum = current_set.iter().sum::<usize>();
     if current_sum == target_value {
         return vec![current_set.to_vec()];
     } else if current_sum > target_value || current_el_index == containers.len() {

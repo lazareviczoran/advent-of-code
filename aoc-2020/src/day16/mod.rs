@@ -12,7 +12,7 @@ pub fn run() {
 }
 
 fn find_fields_order(data: &Data) -> BTreeMap<usize, usize> {
-    let valid_tickets = filter_tickets(&data, true);
+    let valid_tickets = filter_tickets(data, true);
     let mut candidates = (0..data.rules.len())
         .map(|i| {
             (0..data.rules.len())
@@ -46,7 +46,7 @@ fn find_fields_order(data: &Data) -> BTreeMap<usize, usize> {
 }
 
 fn calculate_departure_value(data: &Data) -> usize {
-    find_fields_order(&data)
+    find_fields_order(data)
         .iter()
         .filter_map(|(&new_pos, &orig_pos)| {
             if data.rules[orig_pos].name.starts_with("departure") {
@@ -59,7 +59,7 @@ fn calculate_departure_value(data: &Data) -> usize {
 }
 
 fn count_invalid_values_in_other_tickets(data: &Data) -> usize {
-    let invalid_tickets = filter_tickets(&data, false);
+    let invalid_tickets = filter_tickets(data, false);
     invalid_tickets
         .iter()
         .map(|vals| {
@@ -98,7 +98,7 @@ impl Rule {
     }
 
     pub fn is_valid(&self, value: &usize) -> bool {
-        self.ranges.iter().any(|r| r.contains(&value))
+        self.ranges.iter().any(|r| r.contains(value))
     }
 }
 

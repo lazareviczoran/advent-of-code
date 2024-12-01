@@ -41,7 +41,7 @@ fn shuffle(input: usize, num_repeats: usize, num_of_items: usize) -> Vec<usize> 
     successors
 }
 
-fn swap_and_get_next(successors: &mut Vec<usize>, curr: usize, num_of_items: usize) -> usize {
+fn swap_and_get_next(successors: &mut [usize], curr: usize, num_of_items: usize) -> usize {
     let item1 = successors[curr];
     let item2 = successors[item1];
     let item3 = successors[item2];

@@ -14,10 +14,10 @@ pub fn run() {
     );
 }
 
-fn calculate_total_resource_value(map: &Vec<Vec<char>>, iterations: usize) -> usize {
+fn calculate_total_resource_value(map: &[Vec<char>], iterations: usize) -> usize {
     let mut previous_states = HashMap::new();
-    previous_states.insert(map.clone(), 0);
-    let mut curr_map = map.clone();
+    previous_states.insert(map.to_owned(), 0);
+    let mut curr_map = map.to_owned();
     let mut minutes = 1;
     let mut repeat_min = 0;
     while minutes <= iterations {
@@ -56,18 +56,18 @@ fn calculate_total_resource_value(map: &Vec<Vec<char>>, iterations: usize) -> us
     count.1 * count.2
 }
 
-fn apply_transformation(map: &Vec<Vec<char>>) -> Vec<Vec<char>> {
-    let mut res = map.clone();
+fn apply_transformation(map: &[Vec<char>]) -> Vec<Vec<char>> {
+    let mut res = map.to_vec();
     for j in 0..res[0].len() {
-        for i in 0..res.len() {
-            res[i][j] = calculate_field_value(map, i, j);
+        for (i, row) in res.iter_mut().enumerate() {
+            row[j] = calculate_field_value(map, i, j);
         }
     }
 
     res
 }
 
-fn calculate_field_value(map: &Vec<Vec<char>>, i: usize, j: usize) -> char {
+fn calculate_field_value(map: &[Vec<char>], i: usize, j: usize) -> char {
     let prev_val = map[i][j];
     let from_i = if i > 0 { i - 1 } else { i };
     let to_i = if i < map.len() - 1 { i + 1 } else { i };
@@ -75,15 +75,15 @@ fn calculate_field_value(map: &Vec<Vec<char>>, i: usize, j: usize) -> char {
     let to_j = if j < map[0].len() - 1 { j + 1 } else { j };
     let mut count = (0, 0, 0);
     for y in from_j..=to_j {
-        for x in from_i..=to_i {
+        for (x, row) in map.iter().enumerate().take(to_i + 1).skip(from_i) {
             if x == i && y == j {
                 continue;
             }
-            match map[x][y] {
+            match row[y] {
                 '.' => count.0 += 1,
                 '|' => count.1 += 1,
                 '#' => count.2 += 1,
-                _ => panic!("unexpected char {}", map[x][y]),
+                _ => panic!("unexpected char {}", row[y]),
             }
         }
     }

@@ -20,7 +20,7 @@ pub fn run() {
 }
 
 fn run_instuctions_and_count_lit_lights2(
-    grid: &mut Vec<Vec<usize>>,
+    grid: &mut [Vec<usize>],
     commands_list: &Vec<Command>,
 ) -> usize {
     for cmd in commands_list {
@@ -29,20 +29,20 @@ fn run_instuctions_and_count_lit_lights2(
     count_total_brightness(grid)
 }
 
-fn apply_command2(grid: &mut Vec<Vec<usize>>, cmd: &Command) {
+fn apply_command2(grid: &mut [Vec<usize>], cmd: &Command) {
     for y in cmd.from.y..=cmd.to.y {
-        for x in cmd.from.x..=cmd.to.x {
+        for row in grid.iter_mut().take(cmd.to.x + 1).skip(cmd.from.x) {
             match cmd.cmd_type {
                 CommandType::Toggle => {
-                    grid[x][y] += 2;
+                    row[y] += 2;
                 }
                 CommandType::TurnOff => {
-                    if grid[x][y] > 0 {
-                        grid[x][y] -= 1;
+                    if row[y] > 0 {
+                        row[y] -= 1;
                     }
                 }
                 CommandType::TurnOn => {
-                    grid[x][y] += 1;
+                    row[y] += 1;
                 }
             }
         }
@@ -50,7 +50,7 @@ fn apply_command2(grid: &mut Vec<Vec<usize>>, cmd: &Command) {
 }
 
 fn run_instuctions_and_count_lit_lights(
-    grid: &mut Vec<Vec<bool>>,
+    grid: &mut [Vec<bool>],
     commands_list: &Vec<Command>,
 ) -> usize {
     for cmd in commands_list {
@@ -59,18 +59,18 @@ fn run_instuctions_and_count_lit_lights(
     count_lit_lights(grid)
 }
 
-fn apply_command(grid: &mut Vec<Vec<bool>>, cmd: &Command) {
+fn apply_command(grid: &mut [Vec<bool>], cmd: &Command) {
     for y in cmd.from.y..=cmd.to.y {
-        for x in cmd.from.x..=cmd.to.x {
+        for row in grid.iter_mut().take(cmd.to.x + 1).skip(cmd.from.x) {
             match cmd.cmd_type {
                 CommandType::Toggle => {
-                    grid[x][y] = !grid[x][y];
+                    row[y] = !row[y];
                 }
                 CommandType::TurnOff => {
-                    grid[x][y] = false;
+                    row[y] = false;
                 }
                 CommandType::TurnOn => {
-                    grid[x][y] = true;
+                    row[y] = true;
                 }
             }
         }
@@ -81,7 +81,7 @@ fn convert_to_structured_commands(strings: &Vec<&str>) -> Vec<Command> {
     let mut commands_list = Vec::new();
     let re = Regex::new(r"(\d+),(\d+) through (\d+),(\d+)").unwrap();
     for s in strings {
-        let captures = re.captures(&s).unwrap();
+        let captures = re.captures(s).unwrap();
         let mut cmd_type = CommandType::Toggle;
         if s.starts_with("turn on") {
             cmd_type = CommandType::TurnOn;
@@ -131,28 +131,12 @@ impl Command {
     }
 }
 
-fn count_total_brightness(map: &mut Vec<Vec<usize>>) -> usize {
-    let w = map.len();
-    let h = map[0].len();
-    let mut count = 0;
-    for j in 0..h {
-        for i in 0..w {
-            count += map[i][j];
-        }
-    }
-    count
+fn count_total_brightness(map: &mut [Vec<usize>]) -> usize {
+    map.iter().map(|row| row.iter().sum::<usize>()).sum()
 }
 
-fn count_lit_lights(map: &mut Vec<Vec<bool>>) -> usize {
-    let w = map.len();
-    let h = map[0].len();
-    let mut count = 0;
-    for j in 0..h {
-        for i in 0..w {
-            if map[i][j] {
-                count += 1;
-            }
-        }
-    }
-    count
+fn count_lit_lights(map: &mut [Vec<bool>]) -> usize {
+    map.iter()
+        .map(|row| row.iter().filter(|&&x| x).count())
+        .sum()
 }

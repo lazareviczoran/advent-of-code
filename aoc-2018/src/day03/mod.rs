@@ -17,36 +17,48 @@ pub fn run() {
 fn count_used_field_more_than_once(claims: &Vec<Claim>, field_size: usize) -> usize {
     let mut fields = init_fields(field_size, field_size);
     for claim in claims {
-        for i in claim.position.0..claim.position.0 + claim.dimensions.0 {
-            for j in claim.position.1..claim.position.1 + claim.dimensions.1 {
-                fields[i][j] += 1;
+        for row in fields
+            .iter_mut()
+            .skip(claim.position.0)
+            .take(claim.dimensions.0)
+        {
+            for val in row
+                .iter_mut()
+                .skip(claim.position.1)
+                .take(claim.dimensions.1)
+            {
+                *val += 1;
             }
         }
     }
 
-    let mut count = 0;
-    for i in 0..field_size {
-        for j in 0..field_size {
-            if fields[i][j] > 1 {
-                count += 1;
-            }
-        }
-    }
-    count
+    fields
+        .iter()
+        .take(field_size)
+        .map(|row| row.iter().take(field_size).filter(|&&v| v > 1).count())
+        .sum()
 }
 
 fn find_intact_claim(claims: &Vec<Claim>, field_size: usize) -> usize {
     let mut fields = init_fields(field_size, field_size);
     for claim in claims {
-        for i in claim.position.0..claim.position.0 + claim.dimensions.0 {
-            for j in claim.position.1..claim.position.1 + claim.dimensions.1 {
-                fields[i][j] += 1;
+        for row in fields
+            .iter_mut()
+            .skip(claim.position.0)
+            .take(claim.dimensions.0)
+        {
+            for val in row
+                .iter_mut()
+                .skip(claim.position.1)
+                .take(claim.dimensions.1)
+            {
+                *val += 1;
             }
         }
     }
 
     for claim in claims {
-        if is_intact(&fields, &claim) {
+        if is_intact(&fields, claim) {
             return claim.id;
         }
     }
@@ -54,14 +66,18 @@ fn find_intact_claim(claims: &Vec<Claim>, field_size: usize) -> usize {
     0
 }
 
-fn is_intact(fields: &Vec<Vec<usize>>, claim: &Claim) -> bool {
+fn is_intact(fields: &[Vec<usize>], claim: &Claim) -> bool {
     let mut is_intact = true;
-    for i in claim.position.0..claim.position.0 + claim.dimensions.0 {
-        for j in claim.position.1..claim.position.1 + claim.dimensions.1 {
+    for row in fields
+        .iter()
+        .skip(claim.position.0)
+        .take(claim.dimensions.0)
+    {
+        for &val in row.iter().skip(claim.position.1).take(claim.dimensions.1) {
             if !is_intact {
                 return false;
             }
-            is_intact = is_intact && fields[i][j] == 1;
+            is_intact = is_intact && val == 1;
         }
     }
     is_intact
