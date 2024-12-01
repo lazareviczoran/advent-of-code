@@ -1,4 +1,4 @@
-fn main() {
+pub fn run() {
     let lists = read_input("input.txt");
     utils::measure_exec_time(|| calc_total_distance(&lists), "part1");
     utils::measure_exec_time(|| calc_similarity_score(&lists), "part2");
@@ -28,7 +28,8 @@ fn calc_similarity_score(lists: &[Vec<isize>; 2]) -> isize {
 
 fn read_input(filename: &str) -> [Vec<isize>; 2] {
     let manifest_dir = std::env!("CARGO_MANIFEST_DIR");
-    let mut lists = std::fs::read_to_string(format!("{manifest_dir}/{filename}"))
+    let module_dir = module_path!().split_terminator("::").last().unwrap();
+    let mut lists = std::fs::read_to_string(format!("{manifest_dir}/src/{module_dir}/{filename}"))
         .expect("failed to read file")
         .lines()
         .map(|l| {
@@ -52,9 +53,9 @@ fn read_input(filename: &str) -> [Vec<isize>; 2] {
 
 #[cfg(test)]
 mod tests {
-    use crate::calc_similarity_score;
-    use crate::calc_total_distance;
-    use crate::read_input;
+    use crate::day01::calc_similarity_score;
+    use crate::day01::calc_total_distance;
+    use crate::day01::read_input;
 
     #[test]
     fn test() {
