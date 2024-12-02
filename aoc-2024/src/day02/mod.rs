@@ -5,38 +5,35 @@ pub fn run() {
 }
 
 fn count_safe_reports(reports: &[Vec<isize>], allows_err: bool) -> usize {
-    let check_fn = |diff: isize, sign, matching| {
-        let is_ok = diff.signum() == sign && (1..=3).contains(&diff.abs());
-        match matching {
-            true => is_ok,
-            false => !is_ok,
-        }
-    };
-    let valid = |window: &[isize], sign| check_fn(window[0] - window[1], sign, true);
-    let invalid = |window: &[isize], sign| check_fn(window[0] - window[1], sign, false);
-
     reports
         .iter()
         .filter(|&report| {
             let mut report = report.clone();
-            let signs = report
+            let sign = *report
                 .windows(2)
                 .filter(|window| (window[0] - window[1]).signum() != 0)
                 .map(|window| (window[0] - window[1]).signum())
                 .fold(std::collections::HashMap::new(), |mut map, k| {
                     *map.entry(k).or_insert(0) += 1;
                     map
-                });
-            let sign = *signs.iter().max_by_key(|&(_, v)| v).unwrap().0;
+                })
+                .iter()
+                .max_by_key(|&(_, v)| v)
+                .unwrap()
+                .0;
+            let invalid = |window: &[isize]| {
+                let diff = window[0] - window[1];
+                !(diff.signum() == sign && (1..=3).contains(&diff.abs()))
+            };
 
-            let unsafe_position = report.windows(2).position(|w| invalid(w, sign));
+            let unsafe_position = report.windows(2).position(invalid);
             unsafe_position
                 .map(|i| {
                     let removed = report.remove(i);
-                    let is_safe = report.windows(2).all(|w| valid(w, sign));
+                    let is_safe = !report.windows(2).any(invalid);
                     report.remove(i);
                     report.insert(i, removed);
-                    allows_err && (is_safe || report.windows(2).all(|w| valid(w, sign)))
+                    allows_err && (is_safe || !report.windows(2).any(invalid))
                 })
                 .unwrap_or(true)
         })
