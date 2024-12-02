@@ -11,8 +11,8 @@ fn count_safe_reports(reports: &[Vec<isize>], allows_err: bool) -> usize {
             let mut report = report.clone();
             let sign = *report
                 .windows(2)
-                .filter(|window| (window[0] - window[1]).signum() != 0)
                 .map(|window| (window[0] - window[1]).signum())
+                .filter(|&sign| sign != 0)
                 .fold(std::collections::HashMap::new(), |mut map, k| {
                     *map.entry(k).or_insert(0) += 1;
                     map
