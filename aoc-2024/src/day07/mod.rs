@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 pub fn run() {
     let equations = read_input("input.txt");
 
@@ -7,7 +5,7 @@ pub fn run() {
     utils::run_solution!(|| compute_sum(&equations, Op::candidates(false)), "part2");
 }
 
-fn compute_sum(equations: &[CalibrationEquation], candidates: &[Op]) -> u128 {
+fn compute_sum(equations: &[CalibrationEquation], candidates: &[Op]) -> i128 {
     equations
         .iter()
         .filter(|eq| eq.is_valid(candidates))
@@ -17,68 +15,60 @@ fn compute_sum(equations: &[CalibrationEquation], candidates: &[Op]) -> u128 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct CalibrationEquation {
-    target: u128,
-    values: Vec<u128>,
+    target: i128,
+    values: Vec<i128>,
 }
 impl CalibrationEquation {
     fn is_valid(&self, candidates: &[Op]) -> bool {
-        let mut successful_ops = HashSet::new();
-        self.find_valid_ops_rec(&mut successful_ops, candidates);
-        !successful_ops.is_empty()
+        self.find_valid_ops_rec(candidates)
     }
 
-    fn find_valid_ops_rec(&self, ops_acc: &mut HashSet<(Self, Vec<Op>)>, candidates: &[Op]) {
-        candidates.iter().for_each(|&op| {
-            self.find_valid_ops(
-                op,
-                self.values[0],
-                &self.values[1..],
-                &Vec::new(),
-                ops_acc,
-                candidates,
-            )
-        });
+    fn find_valid_ops_rec(&self, candidates: &[Op]) -> bool {
+        candidates
+            .iter()
+            .any(|&op| Self::find_valid_ops(op, self.target, &self.values[..], candidates))
     }
 
     fn find_valid_ops(
-        &self,
         curr_op: Op,
-        curr_res: u128,
-        remaining_values: &[u128],
-        curr_ops: &[Op],
-        ops_acc: &mut HashSet<(Self, Vec<Op>)>,
+        curr_res: i128,
+        remaining_values: &[i128],
         candidates: &[Op],
-    ) {
-        if remaining_values.is_empty() && curr_res == self.target {
-            ops_acc.insert((self.clone(), curr_ops.to_vec()));
-            return;
+    ) -> bool {
+        if remaining_values.is_empty() && curr_res == 0 {
+            return true;
         }
-        if remaining_values.is_empty() || curr_res > self.target {
-            return;
+        if remaining_values.is_empty() || curr_res <= 0 {
+            return false;
         }
+        let curr_item = *remaining_values.last().unwrap();
         let next_res = match curr_op {
-            Op::Add => curr_res + remaining_values[0],
-            Op::Mul => curr_res * remaining_values[0],
+            Op::Add => curr_res - curr_item,
+            Op::Mul => {
+                if curr_res % curr_item == 0 {
+                    curr_res / curr_item
+                } else {
+                    return false;
+                }
+            }
             Op::Concat => {
-                curr_res * 10_i32.pow(remaining_values[0].ilog10() + 1) as u128
-                    + remaining_values[0]
+                let val = 10_i32.pow(curr_item.ilog10() + 1) as i128;
+                if curr_res - curr_item > 0 && (curr_res - curr_item) % val == 0 {
+                    curr_res / val
+                } else {
+                    return false;
+                }
             }
         };
 
-        let mut next_ops = curr_ops.to_vec();
-        if !remaining_values.is_empty() && candidates.contains(&curr_op) {
-            next_ops.push(curr_op);
-        }
-        candidates.iter().for_each(|&op| {
-            self.find_valid_ops(
+        candidates.iter().any(|&op| {
+            Self::find_valid_ops(
                 op,
                 next_res,
-                &remaining_values[1..],
-                &next_ops,
-                ops_acc,
+                &remaining_values[..remaining_values.len() - 1],
                 candidates,
-            );
-        });
+            )
+        })
     }
 }
 
