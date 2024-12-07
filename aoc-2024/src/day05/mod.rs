@@ -1,6 +1,6 @@
 use itertools::Itertools;
-use std::collections::HashMap;
-use std::collections::HashSet;
+use rustc_hash::FxHashMap;
+use rustc_hash::FxHashSet;
 
 pub fn run() {
     let (rules, ordered, unordered) = read_input("input.txt");
@@ -14,7 +14,7 @@ fn sum_middle_pages_ordered(lists: &[Vec<usize>]) -> usize {
 }
 
 fn sum_middle_pages_unordered(
-    rules: &HashMap<usize, HashSet<usize>>,
+    rules: &FxHashMap<usize, FxHashSet<usize>>,
     lists: &[Vec<usize>],
 ) -> usize {
     lists
@@ -48,7 +48,7 @@ impl MiddleItem for [usize] {
 }
 
 type Input = (
-    HashMap<usize, HashSet<usize>>,
+    FxHashMap<usize, FxHashSet<usize>>,
     Vec<Vec<usize>>,
     Vec<Vec<usize>>,
 );
@@ -56,8 +56,8 @@ fn read_input(filename: &str) -> Input {
     let content = utils::read_to_string_in_module!(filename);
     let (rules, lists) = content.split_once("\n\n").expect("failed to split input");
     let rules = rules.lines().fold(
-        HashMap::new(),
-        |mut acc: HashMap<usize, HashSet<usize>>, line| {
+        FxHashMap::with_capacity_and_hasher(1000, Default::default()),
+        |mut acc: FxHashMap<usize, FxHashSet<usize>>, line| {
             let (from, to) = line
                 .split_terminator('|')
                 .map(|a| a.parse().unwrap())

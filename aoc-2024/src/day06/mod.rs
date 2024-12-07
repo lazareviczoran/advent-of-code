@@ -1,5 +1,5 @@
 use rayon::prelude::*;
-use std::collections::HashSet;
+use rustc_hash::FxHashSet;
 use utils::structs::Point;
 
 pub fn run() {
@@ -14,7 +14,7 @@ fn count_visited(map: &[Vec<char>]) -> usize {
         .expect("no cycle")
         .into_iter()
         .map(|(pos, _)| pos)
-        .collect::<HashSet<_>>()
+        .collect::<FxHashSet<_>>()
         .len()
 }
 
@@ -23,7 +23,7 @@ fn count_obstacles(original_map: &mut [Vec<char>]) -> usize {
         .expect("no cycle")
         .into_iter()
         .map(|(pos, _)| pos)
-        .collect::<HashSet<_>>();
+        .collect::<FxHashSet<_>>();
     let start_pos = original_map
         .iter()
         .enumerate()
@@ -90,7 +90,8 @@ fn traverse(map: &[Vec<char>]) -> Option<Vec<(Point<2, isize>, char)>> {
     })?;
     let mut path = Vec::with_capacity(1000);
 
-    let mut visited: HashSet<(Point<2, _>, char)> = HashSet::with_capacity(1000);
+    let mut visited: FxHashSet<(Point<2, _>, char)> =
+        FxHashSet::with_capacity_and_hasher(1000, Default::default());
     while is_in_bounds(curr_pos)? {
         if !visited.insert((curr_pos, curr_dir.ch)) {
             return None;

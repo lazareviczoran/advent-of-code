@@ -13,10 +13,13 @@ fn count_safe_reports(reports: &[Vec<isize>], allows_err: bool) -> usize {
                 .windows(2)
                 .map(|window| (window[0] - window[1]).signum())
                 .filter(|&sign| sign != 0)
-                .fold(std::collections::HashMap::new(), |mut map, k| {
-                    *map.entry(k).or_insert(0) += 1;
-                    map
-                })
+                .fold(
+                    rustc_hash::FxHashMap::with_capacity_and_hasher(1000, Default::default()),
+                    |mut map, k| {
+                        *map.entry(k).or_insert(0) += 1;
+                        map
+                    },
+                )
                 .iter()
                 .max_by_key(|&(_, v)| v)
                 .unwrap()
