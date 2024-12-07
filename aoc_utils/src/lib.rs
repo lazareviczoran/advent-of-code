@@ -1,3 +1,5 @@
+pub mod structs;
+
 pub fn measure_exec_time_with_scale<T, F>(
     mod_path: &str,
     op: F,
