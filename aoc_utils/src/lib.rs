@@ -44,12 +44,7 @@ fn infer_scale_to_output(
     };
     scale_to_change
         .map(|new_scale| infer_scale_to_output(elapsed, new_scale, skip_infer))
-        .unwrap_or_else(|| {
-            (
-                current.value(elapsed).to_string(),
-                current.output_format().to_string(),
-            )
-        })
+        .unwrap_or_else(|| (current.output_value(elapsed), current.output_format()))
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -60,13 +55,24 @@ pub enum Scale {
     Seconds,
 }
 impl Scale {
-    pub fn output_format(&self) -> &'static str {
+    pub fn output_format(&self) -> String {
         match self {
             Self::Nanos => "ns",
             Self::Micros => "μs",
             Self::Millis => "ms",
             Self::Seconds => "s",
         }
+        .into()
+    }
+
+    pub fn output_value(&self, elapsed: &std::time::Duration) -> String {
+        let (value, precision) = match self {
+            Self::Nanos => (elapsed.as_nanos() as f64, 0),
+            Self::Micros => (elapsed.as_nanos() as f64 / 1000.0, 3),
+            Self::Millis => (elapsed.as_micros() as f64 / 1000.0, 3),
+            Self::Seconds => (elapsed.as_millis() as f64 / 1000.0, 3),
+        };
+        format!("{value:.PRECISION$}", PRECISION = precision)
     }
 
     pub fn value(&self, elapsed: &std::time::Duration) -> u128 {

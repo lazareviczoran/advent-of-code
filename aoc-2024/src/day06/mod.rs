@@ -1,5 +1,5 @@
+use rayon::prelude::*;
 use std::collections::HashSet;
-
 use utils::structs::Point;
 
 pub fn run() {
@@ -18,29 +18,38 @@ fn count_visited(map: &[Vec<char>]) -> usize {
         .len()
 }
 
-fn count_obstacles(map: &mut [Vec<char>]) -> usize {
-    let path = traverse(map).expect("no cycle");
-    let mut visited: HashSet<Point<2, _>> = HashSet::new();
-    path.iter()
-        .skip(1)
-        .filter_map(|(pos, _)| {
-            if visited.contains(pos) {
-                return None;
-            }
-            visited.insert(*pos);
+fn count_obstacles(original_map: &mut [Vec<char>]) -> usize {
+    let path = traverse(original_map)
+        .expect("no cycle")
+        .into_iter()
+        .map(|(pos, _)| pos)
+        .collect::<HashSet<_>>();
+    let start_pos = original_map
+        .iter()
+        .enumerate()
+        .find_map(|(i, row)| {
+            row.iter()
+                .enumerate()
+                .find(|(_, &ch)| matches!(ch, '<' | '>' | 'v' | '^'))
+                .map(|(j, _)| Point::new([i as isize, j as isize]))
+        })
+        .expect("start position not found");
+    path.par_iter()
+        .filter_map(|pos| {
+            let mut map = original_map.to_vec();
             let old = map[pos.get('x')? as usize][pos.get('y')? as usize];
-            let is_starting_pos = &path[0].0 == pos;
-            let a = map[path[0].0.get('x')? as usize][path[0].0.get('y')? as usize];
-            let b = map[path[1].0.get('x')? as usize][path[1].0.get('y')? as usize];
+            let is_starting_pos = &start_pos == pos;
+            let a = map[start_pos.get('x')? as usize][start_pos.get('y')? as usize];
+            let b = map[start_pos.get('x')? as usize - 1][start_pos.get('y')? as usize];
             if is_starting_pos {
-                map[path[0].0.get('x')? as usize][path[0].0.get('y')? as usize] = b;
-                map[path[1].0.get('x')? as usize][path[1].0.get('y')? as usize] = a;
+                map[start_pos.get('x')? as usize][start_pos.get('y')? as usize] = b;
+                map[start_pos.get('x')? as usize - 1][start_pos.get('y')? as usize] = a;
             }
             map[pos.get('x')? as usize][pos.get('y')? as usize] = '#';
-            let is_looping = traverse(map).map(|_| None).unwrap_or(Some(()));
+            let is_looping = traverse(&map).map(|_| None).unwrap_or(Some(()));
             if is_starting_pos {
-                map[path[0].0.get('x')? as usize][path[0].0.get('y')? as usize] = a;
-                map[path[1].0.get('x')? as usize][path[1].0.get('y')? as usize] = b;
+                map[start_pos.get('x')? as usize][start_pos.get('y')? as usize] = a;
+                map[start_pos.get('x')? as usize - 1][start_pos.get('y')? as usize] = b;
             }
             map[pos.get('x')? as usize][pos.get('y')? as usize] = old;
             is_looping
@@ -79,9 +88,9 @@ fn traverse(map: &[Vec<char>]) -> Option<Vec<(Point<2, isize>, char)>> {
     let mut curr_dir = iter.find(|dir| {
         dir.ch == map[curr_pos.get('x').unwrap() as usize][curr_pos.get('y').unwrap() as usize]
     })?;
-    let mut path = Vec::new();
+    let mut path = Vec::with_capacity(1000);
 
-    let mut visited: HashSet<(Point<2, _>, char)> = HashSet::new();
+    let mut visited: HashSet<(Point<2, _>, char)> = HashSet::with_capacity(1000);
     while is_in_bounds(curr_pos)? {
         if !visited.insert((curr_pos, curr_dir.ch)) {
             return None;
