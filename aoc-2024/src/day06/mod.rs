@@ -19,38 +19,19 @@ fn count_visited(map: &[Vec<char>]) -> usize {
 }
 
 fn count_obstacles(original_map: &mut [Vec<char>]) -> usize {
-    let path = traverse(original_map)
-        .expect("no cycle")
+    let path = traverse(original_map).expect("no cycle");
+    let start_pos = path[0].0;
+    let path = path
         .into_iter()
         .map(|(pos, _)| pos)
+        .filter(|&pos| pos != start_pos)
         .collect::<FxHashSet<_>>();
-    let start_pos = original_map
-        .iter()
-        .enumerate()
-        .find_map(|(i, row)| {
-            row.iter()
-                .enumerate()
-                .find(|(_, &ch)| matches!(ch, '<' | '>' | 'v' | '^'))
-                .map(|(j, _)| Point::new([i as isize, j as isize]))
-        })
-        .expect("start position not found");
     path.par_iter()
         .filter_map(|pos| {
             let mut map = original_map.to_vec();
             let old = map[pos.get('x')? as usize][pos.get('y')? as usize];
-            let is_starting_pos = &start_pos == pos;
-            let a = map[start_pos.get('x')? as usize][start_pos.get('y')? as usize];
-            let b = map[start_pos.get('x')? as usize - 1][start_pos.get('y')? as usize];
-            if is_starting_pos {
-                map[start_pos.get('x')? as usize][start_pos.get('y')? as usize] = b;
-                map[start_pos.get('x')? as usize - 1][start_pos.get('y')? as usize] = a;
-            }
             map[pos.get('x')? as usize][pos.get('y')? as usize] = '#';
             let is_looping = traverse(&map).map(|_| None).unwrap_or(Some(()));
-            if is_starting_pos {
-                map[start_pos.get('x')? as usize][start_pos.get('y')? as usize] = a;
-                map[start_pos.get('x')? as usize - 1][start_pos.get('y')? as usize] = b;
-            }
             map[pos.get('x')? as usize][pos.get('y')? as usize] = old;
             is_looping
         })
