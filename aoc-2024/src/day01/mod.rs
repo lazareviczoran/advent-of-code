@@ -14,13 +14,11 @@ fn calc_total_distance(lists: &[Vec<isize>; 2]) -> isize {
 
 fn calc_similarity_score(lists: &[Vec<isize>; 2]) -> isize {
     let (l1, l2) = (&lists[0], &lists[1]);
-    let l2_set = l2.iter().cloned().fold(
-        rustc_hash::FxHashMap::with_capacity_and_hasher(1000, Default::default()),
-        |mut acc, val| {
+    let l2_set: rustc_hash::FxHashMap<_, _> =
+        l2.iter().cloned().fold(Default::default(), |mut acc, val| {
             *acc.entry(val).or_insert(0) += 1;
             acc
-        },
-    );
+        });
     l1.iter()
         .map(|&val| val * l2_set.get(&val).unwrap_or(&0))
         .sum()

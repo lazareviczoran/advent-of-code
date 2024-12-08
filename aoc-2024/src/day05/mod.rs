@@ -56,7 +56,7 @@ fn read_input(filename: &str) -> Input {
     let content = utils::read_to_string_in_module!(filename);
     let (rules, lists) = content.split_once("\n\n").expect("failed to split input");
     let rules = rules.lines().fold(
-        FxHashMap::with_capacity_and_hasher(1000, Default::default()),
+        FxHashMap::default(),
         |mut acc: FxHashMap<usize, FxHashSet<usize>>, line| {
             let (from, to) = line
                 .split_terminator('|')

@@ -71,8 +71,7 @@ fn traverse(map: &[Vec<char>]) -> Option<Vec<(Point<2, isize>, char)>> {
     })?;
     let mut path = Vec::with_capacity(1000);
 
-    let mut visited: FxHashSet<(Point<2, _>, char)> =
-        FxHashSet::with_capacity_and_hasher(1000, Default::default());
+    let mut visited: FxHashSet<(Point<2, _>, char)> = FxHashSet::default();
     while is_in_bounds(curr_pos)? {
         if !visited.insert((curr_pos, curr_dir.ch)) {
             return None;
