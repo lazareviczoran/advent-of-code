@@ -47,45 +47,29 @@ impl Map {
 
     fn locate_antinodes(&mut self, proceed: bool) {
         self.frequencies.iter().for_each(|(&freq, locations)| {
-            locations.iter().combinations(2).for_each(|mut pairs| {
-                pairs.sort_by(|&&a, &&b| {
-                    a.get('x')
-                        .cmp(&b.get('x'))
-                        .then(a.get('y').cmp(&b.get('y')))
-                });
-                let line = Line::new(*pairs[0], *pairs[1]);
-                if !proceed {
-                    let next = line.next().unwrap();
-                    if is_in_bounds(&self.items, &next).unwrap() {
-                        self.antinodes.entry(next).or_default().insert(freq);
+            locations
+                .iter()
+                .combinations(2)
+                .filter(|pair| pair[0] != pair[1])
+                .for_each(|pairs| {
+                    if proceed {
+                        self.antinodes.entry(*pairs[0]).or_default().insert(freq);
+                        self.antinodes.entry(*pairs[1]).or_default().insert(freq);
                     }
-                    let prev = line.prev().unwrap();
-                    if is_in_bounds(&self.items, &prev).unwrap() {
-                        self.antinodes.entry(prev).or_default().insert(freq);
-                    }
-                } else {
-                    self.antinodes.entry(*pairs[0]).or_default().insert(freq);
-                    self.antinodes.entry(*pairs[1]).or_default().insert(freq);
-                    let mut curr = line;
-                    while let Some(next) = curr.next() {
-                        if !is_in_bounds(&self.items, &next).unwrap() {
-                            break;
+                    for dir in [Dir::Next, Dir::Prev] {
+                        let mut curr = Line::new(*pairs[0], *pairs[1]);
+                        loop {
+                            let new_point = curr.move_to(dir).unwrap();
+                            if !is_in_bounds(&self.items, &new_point).unwrap() {
+                                break;
+                            }
+                            self.antinodes.entry(new_point).or_default().insert(freq);
+                            if !proceed {
+                                break;
+                            }
                         }
-                        self.antinodes.entry(next).or_default().insert(freq);
-                        curr.to = curr.from;
-                        curr.from = next;
                     }
-                    let mut curr = line;
-                    while let Some(prev) = curr.prev() {
-                        if !is_in_bounds(&self.items, &prev).unwrap() {
-                            break;
-                        }
-                        self.antinodes.entry(prev).or_default().insert(freq);
-                        curr.from = curr.to;
-                        curr.to = prev;
-                    }
-                }
-            })
+                })
         });
     }
 
@@ -119,29 +103,35 @@ impl Line {
         Line { from, to }
     }
 
-    fn prev(&self) -> Option<Point<2, isize>> {
-        let diff = (
-            self.from.get('x')? - self.to.get('x')?,
-            self.from.get('y')? - self.to.get('y')?,
-        );
-        let point = Point::new([
-            self.to.get('x')? - diff.0.signum() * diff.0.abs(),
-            self.to.get('y')? - diff.1.signum() * diff.1.abs(),
-        ]);
+    fn move_to(&mut self, dir: Dir) -> Option<Point<2, isize>> {
+        let point = self.next_point(dir)?;
+        *self = match dir {
+            Dir::Next => Line::new(self.to, point),
+            Dir::Prev => Line::new(point, self.from),
+        };
         Some(point)
     }
 
-    fn next(&self) -> Option<Point<2, isize>> {
+    fn next_point(&self, dir: Dir) -> Option<Point<2, isize>> {
+        let (dir, origin) = match dir {
+            Dir::Next => (-1, self.to),
+            Dir::Prev => (1, self.from),
+        };
         let diff = (
             self.from.get('x')? - self.to.get('x')?,
             self.from.get('y')? - self.to.get('y')?,
         );
         let point = Point::new([
-            self.from.get('x')? + diff.0.signum() * diff.0.abs(),
-            self.from.get('y')? + diff.1.signum() * diff.1.abs(),
+            origin.get('x')? + dir * diff.0.signum() * diff.0.abs(),
+            origin.get('y')? + dir * diff.1.signum() * diff.1.abs(),
         ]);
         Some(point)
     }
+}
+#[derive(Debug, Clone, Copy)]
+enum Dir {
+    Next,
+    Prev,
 }
 
 fn is_in_bounds(map: &[Vec<char>], pos: &Point<2, isize>) -> Option<bool> {
