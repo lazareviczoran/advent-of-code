@@ -118,12 +118,16 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "include-main-input")]
     fn prod() {
+        use itertools::Itertools;
+        let (pt1, pt2) = utils::read_to_string_in_module!("results.txt")
+            .lines()
+            .map(|line| line.parse::<i128>().unwrap())
+            .collect_tuple()
+            .unwrap();
         let equations = read_input("input.txt");
-        assert_eq!(compute_sum(&equations, Op::candidates(true)), 2654749936343);
-        assert_eq!(
-            compute_sum(&equations, Op::candidates(false)),
-            124060392153684
-        );
+        assert_eq!(compute_sum(&equations, Op::candidates(true)), pt1);
+        assert_eq!(compute_sum(&equations, Op::candidates(false)), pt2);
     }
 }

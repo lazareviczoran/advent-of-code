@@ -64,8 +64,15 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "include-main-input")]
     fn prod() {
-        assert_eq!(count_safe_reports(&read_input("input.txt"), false), 510);
-        assert_eq!(count_safe_reports(&read_input("input.txt"), true), 553);
+        use itertools::Itertools;
+        let (pt1, pt2) = utils::read_to_string_in_module!("results.txt")
+            .lines()
+            .map(|line| line.parse::<usize>().unwrap())
+            .collect_tuple()
+            .unwrap();
+        assert_eq!(count_safe_reports(&read_input("input.txt"), false), pt1);
+        assert_eq!(count_safe_reports(&read_input("input.txt"), true), pt2);
     }
 }

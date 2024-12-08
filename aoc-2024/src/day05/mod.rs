@@ -105,9 +105,16 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "include-main-input")]
     fn prod() {
+        use itertools::Itertools;
+        let (pt1, pt2) = utils::read_to_string_in_module!("results.txt")
+            .lines()
+            .map(|line| line.parse::<usize>().unwrap())
+            .collect_tuple()
+            .unwrap();
         let (rules, ordered, unordered) = read_input("input.txt");
-        assert_eq!(sum_middle_pages_ordered(&ordered), 5964);
-        assert_eq!(sum_middle_pages_unordered(&rules, &unordered), 4719);
+        assert_eq!(sum_middle_pages_ordered(&ordered), pt1);
+        assert_eq!(sum_middle_pages_unordered(&rules, &unordered), pt2);
     }
 }

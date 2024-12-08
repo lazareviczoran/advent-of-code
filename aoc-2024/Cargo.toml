@@ -9,3 +9,6 @@ regex = "*"
 itertools = "*"
 rayon = "*"
 rustc-hash = "*"
+
+[features]
+include-main-input = []

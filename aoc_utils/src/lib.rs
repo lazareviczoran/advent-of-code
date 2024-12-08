@@ -115,7 +115,11 @@ macro_rules! read_to_string_in_module {
 macro_rules! get_file_path_within_module {
     ($filename: expr) => {{
         let manifest_dir = std::env!("CARGO_MANIFEST_DIR");
-        let module_dir = module_path!().split_terminator("::").last().unwrap();
+        let module_dir = module_path!()
+            .split_terminator("::")
+            .filter(|n| n != &"tests")
+            .last()
+            .unwrap();
         format!("{manifest_dir}/src/{module_dir}/{}", $filename)
     }};
 }

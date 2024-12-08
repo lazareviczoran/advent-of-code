@@ -132,9 +132,16 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "include-main-input")]
     fn prod() {
+        use itertools::Itertools;
+        let (pt1, pt2) = utils::read_to_string_in_module!("results.txt")
+            .lines()
+            .map(|line| line.parse::<usize>().unwrap())
+            .collect_tuple()
+            .unwrap();
         let mut map = read_input("input.txt");
-        assert_eq!(count_visited(&map), 4580);
-        assert_eq!(count_obstacles(&mut map), 1480);
+        assert_eq!(count_visited(&map), pt1);
+        assert_eq!(count_obstacles(&mut map), pt2);
     }
 }

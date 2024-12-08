@@ -187,9 +187,16 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "include-main-input")]
     fn prod() {
+        use itertools::Itertools;
+        let (pt1, pt2) = utils::read_to_string_in_module!("results.txt")
+            .lines()
+            .map(|line| line.parse::<usize>().unwrap())
+            .collect_tuple()
+            .unwrap();
         let mut map = read_input("input.txt");
-        assert_eq!(map.count_unique_antinodes_positions(false), 354);
-        assert_eq!(map.count_unique_antinodes_positions(true), 1263);
+        assert_eq!(map.count_unique_antinodes_positions(false), pt1);
+        assert_eq!(map.count_unique_antinodes_positions(true), pt2);
     }
 }

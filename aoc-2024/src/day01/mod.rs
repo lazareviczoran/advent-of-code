@@ -59,8 +59,15 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "include-main-input")]
     fn prod() {
-        assert_eq!(calc_total_distance(&read_input("input.txt")), 936063);
-        assert_eq!(calc_similarity_score(&read_input("input.txt")), 23150395);
+        use itertools::Itertools;
+        let (pt1, pt2) = utils::read_to_string_in_module!("results.txt")
+            .lines()
+            .map(|line| line.parse::<isize>().unwrap())
+            .collect_tuple()
+            .unwrap();
+        assert_eq!(calc_total_distance(&read_input("input.txt")), pt1);
+        assert_eq!(calc_similarity_score(&read_input("input.txt")), pt2);
     }
 }

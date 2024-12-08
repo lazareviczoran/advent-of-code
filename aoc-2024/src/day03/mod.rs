@@ -43,8 +43,15 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "include-main-input")]
     fn prod() {
-        assert_eq!(compute(&read_input("input.txt"), false), 175015740);
-        assert_eq!(compute(&read_input("input.txt"), true), 112272912);
+        use itertools::Itertools;
+        let (pt1, pt2) = utils::read_to_string_in_module!("results.txt")
+            .lines()
+            .map(|line| line.parse::<usize>().unwrap())
+            .collect_tuple()
+            .unwrap();
+        assert_eq!(compute(&read_input("input.txt"), false), pt1);
+        assert_eq!(compute(&read_input("input.txt"), true), pt2);
     }
 }
